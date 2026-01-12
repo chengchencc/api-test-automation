@@ -1,0 +1,634 @@
+import pytest
+import allure
+import json
+import time
+from typing import Dict, Any, List
+from ..common.excel_reader import excel_reader
+from ..common.request_client import request_client
+from ..common.assert_utils import assert_utils
+from ..common.template_engine import template_engine
+from ..config.logger import logger, TestLogger
+
+class BaseTest:
+    """测试基类"""
+
+    def setup_class(self):
+        """测试类初始化"""
+        self.test_logger = TestLogger(self.__class__.__name__)
+        self.test_logger.log_step("测试类初始化")
+
+        # 读取配置文件
+        self.config = excel_reader.get_config()
+
+        # 更新模板引擎上下文
+        template_engine.update_context(
+            config=self.config,
+            timestamp=int(time.time()),
+        )
+
+    def teardown_class(self):
+        """测试类清理"""
+        self.test_logger.log_step("测试类清理")
+
+    def setup_method(self, method):
+        """测试方法初始化"""
+        test_name = method.__name__
+        self.test_logger.test_name = test_name
+        self.test_logger.log_step(f"开始测试: {test_name}")
+
+    def teardown_method(self, method):
+        """测试方法清理"""
+        self.test_logger.log_step(f"结束测试: {method.__name__}")
+
+
+@allure.epic("接口自动化测试")
+@allure.feature("基础接口测试")
+class TestAPI(BaseTest):
+    """API测试类"""
+
+    @pytest.fixture(scope="class", autouse=True)
+    def setup_test_class(self):
+        """测试类级别的初始化"""
+        self.cache = {}  # 用于存储测试间共享的数据
+        yield
+        # 测试类清理
+
+    @allure.story("Excel数据驱动测试")
+    @pytest.mark.parametrize("test_case", excel_reader.get_test_cases("test_cases"))
+    def test_excel_driven(self, test_case: Dict[str, Any]):
+        """
+        执行Excel中的测试用例
+
+        Args:
+            test_case: 测试用例数据
+        """
+        # 获取测试用例信息
+        case_id = test_case.get('case_id', 'unknown')
+        case_name = test_case.get('case_name', '未知用例')
+        description = test_case.get('description', '')
+        method = test_case.get('method', 'GET').upper()
+        url = test_case.get('url', '')
+        headers = test_case.get('headers', {})
+        params = test_case.get('params', {})
+        data = test_case.get('data', {})
+        json_data = test_case.get('json', {})
+        files = test_case.get('files', None)
+        expected_status = test_case.get('expected_status', 200)
+        expected_response = test_case.get('expected_response', {})
+        expected_schema = test_case.get('expected_schema', {})
+        expected_contains = test_case.get('expected_contains')
+        max_response_time = test_case.get('max_response_time')
+        setup_data = test_case.get('setup_data', {})
+        teardown_data = test_case.get('teardown_data', {})
+
+        # 设置Allure报告信息
+        allure.dynamic.title(f"{case_id}: {case_name}")
+        allure.dynamic.description(description or f"测试用例: {case_name}")
+
+        # 设置标签
+        tags = test_case.get('tags', '').split(',') if test_case.get('tags') else []
+        for tag in tags:
+            if tag.strip():
+                allure.dynamic.tag(tag.strip())
+
+        # 设置严重级别
+        severity = test_case.get('severity', 'normal').lower()
+        if severity == 'blocker':
+            allure.dynamic.severity(allure.severity_level.BLOCKER)
+        elif severity == 'critical':
+            allure.dynamic.severity(allure.severity_level.CRITICAL)
+        elif severity == 'normal':
+            allure.dynamic.severity(allure.severity_level.NORMAL)
+        elif severity == 'minor':
+            allure.dynamic.severity(allure.severity_level.MINOR)
+        elif severity == 'trivial':
+            allure.dynamic.severity(allure.severity_level.TRIVIAL)
+
+        self.test_logger.log_step(f"执行测试用例: {case_id} - {case_name}")
+
+        try:
+            # 前置操作
+            if setup_data:
+                self._execute_setup(setup_data, case_id)
+
+            # 准备上下文
+            context = {
+                'case_id': case_id,
+                'case_name': case_name,
+                'cache': self.cache,
+                'timestamp': int(time.time()),
+            }
+
+            # 发送请求
+            response = request_client.send_request(
+                method=method,
+                url=url,
+                headers=headers,
+                params=params,
+                json_data=json_data,
+                data=data,
+                files=files,
+                context=context
+            )
+
+            # 将响应数据保存到缓存，供后续用例使用
+            response_data = self._extract_response_data(response, test_case.get('extract', {}))
+            self.cache.update(response_data)
+
+            # 更新模板引擎上下文
+            template_engine.update_context(
+                response=response_data,
+                last_response=response_data,
+                cache=self.cache
+            )
+
+            # 记录请求响应详情到Allure
+            self._attach_request_response_to_allure(response, test_case)
+
+            # 综合断言
+            assert_utils.assert_response(
+                response=response,
+                expected_status=expected_status,
+                expected_json=expected_response,
+                expected_schema=expected_schema,
+                expected_contains=expected_contains,
+                max_time=max_response_time,
+                message=f"用例 {case_id} 断言失败"
+            )
+
+            # 自定义断言
+            custom_assertions = test_case.get('assertions', [])
+            if custom_assertions and isinstance(custom_assertions, list):
+                self._execute_custom_assertions(response, custom_assertions)
+
+            self.test_logger.log_step(f"测试用例 {case_id} 执行成功")
+
+        except Exception as e:
+            self.test_logger.log_step(f"测试用例 {case_id} 执行失败: {e}")
+            pytest.fail(f"测试用例执行失败: {e}")
+
+        finally:
+            # 后置操作
+            if teardown_data:
+                self._execute_teardown(teardown_data, case_id)
+
+    def _execute_setup(self, setup_data: Dict, case_id: str):
+        """执行前置操作"""
+        self.test_logger.log_step(f"执行前置操作: {case_id}")
+
+        # 这里可以执行各种前置操作，如：
+        # 1. 数据库准备
+        # 2. 文件准备
+        # 3. 环境准备
+        # 4. 调用其他接口等
+
+        if setup_data.get('type') == 'api':
+            # 执行API前置操作
+            setup_response = request_client.send_request(
+                method=setup_data.get('method', 'GET'),
+                url=setup_data.get('url', ''),
+                headers=setup_data.get('headers', {}),
+                json_data=setup_data.get('json', {}),
+                data=setup_data.get('data', {})
+            )
+
+            # 提取数据到缓存
+            extract = setup_data.get('extract', {})
+            if extract:
+                extracted = self._extract_from_response(setup_response, extract)
+                self.cache.update(extracted)
+
+        elif setup_data.get('type') == 'sql':
+            # 执行SQL前置操作
+            # 这里可以连接数据库执行SQL
+            pass
+
+        elif setup_data.get('type') == 'command':
+            # 执行命令前置操作
+            import subprocess
+            command = setup_data.get('command', '')
+            if command:
+                subprocess.run(command, shell=True, check=True)
+
+    def _execute_teardown(self, teardown_data: Dict, case_id: str):
+        """执行后置操作"""
+        self.test_logger.log_step(f"执行后置操作: {case_id}")
+
+        # 这里可以执行各种后置操作，如：
+        # 1. 数据清理
+        # 2. 文件清理
+        # 3. 环境恢复
+
+        if teardown_data.get('type') == 'api':
+            # 执行API后置操作
+            teardown_response = request_client.send_request(
+                method=teardown_data.get('method', 'DELETE'),
+                url=teardown_data.get('url', ''),
+                headers=teardown_data.get('headers', {}),
+                json_data=teardown_data.get('json', {}),
+                data=teardown_data.get('data', {})
+            )
+
+            # 验证后置操作结果
+            expected_status = teardown_data.get('expected_status', 200)
+            if teardown_response.status_code != expected_status:
+                logger.warning(f"后置操作返回异常状态码: {teardown_response.status_code}")
+
+        elif teardown_data.get('type') == 'sql':
+            # 执行SQL后置操作
+            pass
+
+        elif teardown_data.get('type') == 'command':
+            # 执行命令后置操作
+            import subprocess
+            command = teardown_data.get('command', '')
+            if command:
+                subprocess.run(command, shell=True, check=False)  # 不检查返回码
+
+    def _extract_response_data(self, response, extract_rules: Dict) -> Dict:
+        """从响应中提取数据"""
+        extracted = {}
+
+        if not extract_rules or not response.content:
+            return extracted
+
+        try:
+            # 尝试解析JSON响应
+            if response.headers.get('Content-Type', '').startswith('application/json'):
+                response_data = response.json()
+
+                for key, jsonpath in extract_rules.items():
+                    try:
+                        # 简单的JSON路径提取（支持点表示法）
+                        value = self._extract_by_jsonpath(response_data, jsonpath)
+                        if value is not None:
+                            extracted[key] = value
+                            logger.debug(f"提取数据: {key} = {value}")
+                    except Exception as e:
+                        logger.warning(f"提取字段失败: {key} -> {jsonpath}, 错误: {e}")
+            else:
+                # 非JSON响应，可以提取文本或使用正则
+                response_text = response.text
+                for key, pattern in extract_rules.items():
+                    if isinstance(pattern, str) and pattern.startswith('regex:'):
+                        import re
+                        regex = pattern[6:]  # 去掉'regex:'前缀
+                        match = re.search(regex, response_text)
+                        if match:
+                            extracted[key] = match.group(1) if match.groups() else match.group(0)
+
+        except json.JSONDecodeError:
+            logger.warning("响应不是有效的JSON格式，无法提取数据")
+
+        return extracted
+
+    def _extract_by_jsonpath(self, data: Any, jsonpath: str) -> Any:
+        """使用简单JSON路径提取数据"""
+        if not jsonpath or jsonpath == '.':
+            return data
+
+        # 简单的点表示法实现
+        parts = jsonpath.split('.')
+        current = data
+
+        for part in parts:
+            if part == '':
+                continue
+
+            # 处理数组索引，如items[0]
+            if '[' in part and part.endswith(']'):
+                # 分割字段名和索引
+                import re
+                match = re.match(r'(\w+)\[(\d+)\]$', part)
+                if match:
+                    field_name, index_str = match.groups()
+                    index = int(index_str)
+
+                    if isinstance(current, dict) and field_name in current:
+                        if isinstance(current[field_name], list) and 0 <= index < len(current[field_name]):
+                            current = current[field_name][index]
+                        else:
+                            return None
+                    else:
+                        return None
+                else:
+                    return None
+            else:
+                # 普通字段
+                if isinstance(current, dict) and part in current:
+                    current = current[part]
+                elif isinstance(current, list) and part.isdigit() and 0 <= int(part) < len(current):
+                    current = current[int(part)]
+                else:
+                    return None
+
+        return current
+
+    def _execute_custom_assertions(self, response, assertions: List[Dict]):
+        """执行自定义断言"""
+        for idx, assertion in enumerate(assertions):
+            try:
+                assertion_type = assertion.get('type', '')
+                expected = assertion.get('expected')
+                actual = assertion.get('actual')
+                message = assertion.get('message', f'自定义断言 {idx + 1} 失败')
+
+                if assertion_type == 'status_code':
+                    assert_utils.assert_status_code(response.status_code, expected, message)
+
+                elif assertion_type == 'contains':
+                    assert_utils.assert_response_contains(response.text, expected, message)
+
+                elif assertion_type == 'json_path':
+                    # 需要安装jsonpath-ng库
+                    try:
+                        from jsonpath_ng import parse
+                        jsonpath_expr = parse(assertion.get('jsonpath', ''))
+                        matches = [match.value for match in jsonpath_expr.find(response.json())]
+
+                        if assertion.get('expect_exists', True):
+                            assert matches, f"JSON路径未找到匹配: {assertion.get('jsonpath')}"
+
+                        if expected is not None:
+                            if assertion.get('match_type') == 'equals':
+                                assert matches[0] == expected, f"JSON路径值不匹配: {matches[0]} != {expected}"
+                            elif assertion.get('match_type') == 'contains':
+                                assert expected in str(matches[0]), f"JSON路径值不包含: {expected}"
+                    except ImportError:
+                        logger.warning("jsonpath-ng未安装，跳过JSON路径断言")
+
+                elif assertion_type == 'schema':
+                    response_json = response.json() if response.content else {}
+                    assert_utils.assert_response_schema(response_json, expected, message)
+
+                logger.debug(f"自定义断言 {idx + 1} 成功: {assertion_type}")
+
+            except Exception as e:
+                logger.error(f"自定义断言 {idx + 1} 失败: {e}")
+                raise
+
+    def _attach_request_response_to_allure(self, response, test_case: Dict):
+        """将请求响应详情附加到Allure报告"""
+
+        # 请求信息
+        request_info = {
+            'method': response.request.method,
+            'url': response.request.url,
+            'headers': dict(response.request.headers),
+            'body': response.request.body
+        }
+
+        # 响应信息
+        response_info = {
+            'status_code': response.status_code,
+            'headers': dict(response.headers),
+            'body': response.text,
+            'elapsed': response.elapsed.total_seconds() if hasattr(response, 'elapsed') else 0
+        }
+
+        # 用例信息
+        case_info = {
+            'case_id': test_case.get('case_id'),
+            'case_name': test_case.get('case_name'),
+            'description': test_case.get('description'),
+            'severity': test_case.get('severity', 'normal')
+        }
+
+        # 附加到Allure报告
+        allure.attach(
+            json.dumps(case_info, indent=2, ensure_ascii=False),
+            name="用例信息",
+            attachment_type=allure.attachment_type.JSON
+        )
+
+        allure.attach(
+            json.dumps(request_info, indent=2, ensure_ascii=False),
+            name="请求详情",
+            attachment_type=allure.attachment_type.JSON
+        )
+
+        # 如果响应是JSON，以JSON格式附加
+        if response.headers.get('Content-Type', '').startswith('application/json'):
+            try:
+                allure.attach(
+                    json.dumps(json.loads(response.text), indent=2, ensure_ascii=False),
+                    name="响应详情(JSON)",
+                    attachment_type=allure.attachment_type.JSON
+                )
+            except:
+                allure.attach(
+                    response.text,
+                    name="响应详情(Text)",
+                    attachment_type=allure.attachment_type.TEXT
+                )
+        else:
+            allure.attach(
+                response.text,
+                name="响应详情",
+                attachment_type=allure.attachment_type.TEXT
+            )
+
+    @allure.story("基本接口测试")
+    @allure.title("健康检查接口")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_health_check(self):
+        """健康检查接口测试"""
+        response = request_client.get("/health")
+
+        assert_utils.assert_status_code(response.status_code, 200)
+        assert_utils.assert_response_contains(response.text, "ok")
+
+    @allure.story("认证接口测试")
+    @allure.title("用户登录接口")
+    def test_login(self):
+        """用户登录接口测试"""
+        login_data = {
+            "username": "{{ random_string(8, 'user_') }}",
+            "password": "{{ random_string(12) }}",
+            "timestamp": "{{ timestamp() }}"
+        }
+
+        # 渲染模板
+        rendered_data = template_engine.render(login_data)
+
+        response = request_client.post("/api/login", json_data=rendered_data)
+
+        # 综合断言
+        assert_utils.assert_response(
+            response=response,
+            expected_status=200,
+            expected_schema={
+                "code": int,
+                "message": str,
+                "data": {
+                    "token": str,
+                    "user_id": int
+                }
+            }
+        )
+
+    @allure.story("参数化测试")
+    @pytest.mark.parametrize("username,password,expected_status", [
+        ("admin", "admin123", 200),
+        ("user", "wrongpass", 401),
+        ("", "password", 400),
+        ("user", "", 400),
+    ])
+    def test_login_parameterized(self, username, password, expected_status):
+        """参数化登录测试"""
+        login_data = {
+            "username": username,
+            "password": password
+        }
+
+        response = request_client.post("/api/login", json_data=login_data)
+        assert_utils.assert_status_code(response.status_code, expected_status)
+
+    @allure.story("文件上传测试")
+    def test_file_upload(self):
+        """文件上传接口测试"""
+        import io
+
+        # 创建测试文件
+        test_file = io.BytesIO(b"This is a test file content")
+        test_file.name = "test.txt"
+
+        files = {
+            "file": test_file
+        }
+
+        response = request_client.post("/api/upload", files=files)
+
+        assert_utils.assert_status_code(response.status_code, 200)
+        assert_utils.assert_response_json(
+            response.json(),
+            {"code": 0, "message": "success"}
+        )
+
+    @allure.story("链式接口测试")
+    def test_chained_requests(self):
+        """链式接口测试（一个接口的响应作为另一个接口的输入）"""
+
+        # 1. 先登录获取token
+        login_data = {
+            "username": "testuser",
+            "password": "testpass"
+        }
+
+        login_response = request_client.post("/api/login", json_data=login_data)
+        assert_utils.assert_status_code(login_response.status_code, 200)
+
+        # 提取token
+        login_data = login_response.json()
+        token = login_data.get("data", {}).get("token")
+        assert token, "登录响应中未找到token"
+
+        # 2. 使用token获取用户信息
+        request_client.add_header("Authorization", f"Bearer {token}")
+
+        user_response = request_client.get("/api/user/profile")
+        assert_utils.assert_status_code(user_response.status_code, 200)
+
+        # 清理请求头
+        request_client.remove_header("Authorization")
+
+    @allure.story("性能测试")
+    def test_response_time(self):
+        """响应时间测试"""
+        import time
+
+        start_time = time.time()
+        response = request_client.get("/api/health")
+        elapsed = time.time() - start_time
+
+        # 断言响应时间小于1秒
+        assert_utils.assert_time(elapsed, 1.0)
+
+        # 记录响应时间
+        logger.info(f"接口响应时间: {elapsed:.3f}秒")
+
+    @allure.story("异常测试")
+    def test_invalid_endpoint(self):
+        """测试不存在的接口"""
+        response = request_client.get("/invalid-endpoint")
+        assert_utils.assert_status_code(response.status_code, 404)
+
+    @allure.story("动态参数测试")
+    def test_dynamic_parameters(self):
+        """测试Jinja2动态参数功能"""
+
+        # 使用模板引擎生成测试数据
+        test_context = {
+            "user_id": 12345,
+            "order_prefix": "ORD"
+        }
+
+        # 渲染各种动态参数
+        test_cases = [
+            ("随机用户名", "{{ 'user_' ~ random_int(1000, 9999) }}"),
+            ("带时间戳的订单号", "{{ order_prefix }}_{{ timestamp() }}"),
+            ("MD5签名", "{{ (user_id|string ~ timestamp()|string) | md5 }}"),
+            ("随机邮箱", "{{ random_string(8) }}@test.com"),
+            ("今日日期", "{{ today() }}"),
+        ]
+
+        for name, template in test_cases:
+            result = template_engine.render_string(template, **test_context)
+            logger.info(f"{name}: {template} -> {result}")
+            assert result, f"模板渲染失败: {template}"
+
+    @allure.story("数据驱动测试-多Sheet")
+    @pytest.mark.parametrize("sheet_name", ["login_cases", "user_cases", "order_cases"])
+    def test_multiple_sheets(self, sheet_name):
+        """测试多个Excel Sheet"""
+        try:
+            test_cases = excel_reader.get_test_cases(sheet_name)
+
+            if not test_cases:
+                pytest.skip(f"Sheet {sheet_name} 中没有测试用例")
+
+            for test_case in test_cases:
+                # 简化执行，不记录详细的Allure步骤
+                response = request_client.send_request(
+                    method=test_case.get('method', 'GET'),
+                    url=test_case.get('url', ''),
+                    json_data=test_case.get('json', {})
+                )
+
+                expected_status = test_case.get('expected_status', 200)
+                assert_utils.assert_status_code(response.status_code, expected_status)
+
+        except Exception as e:
+            if "No sheet named" in str(e):
+                pytest.skip(f"Sheet {sheet_name} 不存在")
+            else:
+                raise
+
+
+class TestDataDriven:
+    """数据驱动测试类"""
+
+    @pytest.fixture(params=excel_reader.get_test_cases("data_driven"))
+    def data_driven_case(self, request):
+        """数据驱动测试用例fixture"""
+        return request.param
+
+    @allure.story("数据驱动测试")
+    def test_data_driven(self, data_driven_case):
+        """使用fixture的数据驱动测试"""
+        case_name = data_driven_case.get('case_name', '未知用例')
+        allure.dynamic.title(case_name)
+
+        response = request_client.send_request(
+            method=data_driven_case.get('method', 'GET'),
+            url=data_driven_case.get('url', ''),
+            json_data=data_driven_case.get('json', {})
+        )
+
+        expected_status = data_driven_case.get('expected_status', 200)
+        assert_utils.assert_status_code(response.status_code, expected_status)
+
+
+if __name__ == "__main__":
+    # 直接运行测试
+    pytest.main([__file__, "-v", "--tb=short"])
