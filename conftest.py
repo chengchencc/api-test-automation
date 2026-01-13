@@ -3,18 +3,22 @@ import allure
 import os
 import json
 from datetime import datetime
-from src.config.configuration import config
+from src.config.configuration import project_config
 from src.config.logger import logger
 from src.common.template_engine import template_engine
 
+import sys
+
+print("syspath::")
+print(sys.path)
 
 def pytest_configure(config):
     """Pytest配置钩子"""
     # 设置环境变量
-    os.environ['ALLURE_RESULTS'] = str(config.ALLURE_RESULTS)
+    os.environ['ALLURE_RESULTS'] = str(project_config.ALLURE_RESULTS)
 
     # 创建必要的目录
-    config.ALLURE_RESULTS.mkdir(exist_ok=True)
+    project_config.ALLURE_RESULTS.mkdir(exist_ok=True)
 
     # 添加自定义标记说明
     config.addinivalue_line(
@@ -77,7 +81,7 @@ def _attach_failure_details(item, rep):
         )
 
     # 添加日志文件
-    log_file = config.LOG_DIR / f"test_{datetime.now().strftime('%Y%m%d')}.log"
+    log_file = project_config.LOG_DIR / f"test_{datetime.now().strftime('%Y%m%d')}.log"
     if log_file.exists():
         try:
             with open(log_file, 'r', encoding='utf-8') as f:
@@ -101,9 +105,9 @@ def setup_test_session():
     logger.info("=" * 60)
     logger.info("开始测试会话")
     logger.info(f"测试时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info(f"项目目录: {config.BASE_DIR}")
-    logger.info(f"测试数据: {config.EXCEL_FILE}")
-    logger.info(f"基础URL: {config.BASE_URL}")
+    logger.info(f"项目目录: {project_config.BASE_DIR}")
+    logger.info(f"测试数据: {project_config.EXCEL_FILE}")
+    logger.info(f"基础URL: {project_config.BASE_URL}")
     logger.info("=" * 60)
 
     # 创建测试环境
@@ -252,7 +256,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def test_env(request):
     """测试环境fixture"""
-    return request.config.getoption("--env")
+    return request.project_config.getoption("--env")
 
 
 # Allure环境文件
@@ -261,15 +265,15 @@ def pytest_sessionfinish(session, exitstatus):
     # 生成Allure环境文件
     allure_env = {
         "测试环境": os.environ.get("ENVIRONMENT", "test"),
-        "基础URL": config.BASE_URL,
+        "基础URL": project_config.BASE_URL,
         "Python版本": os.environ.get("PYTHON_VERSION", "unknown"),
         "操作系统": os.name,
         "测试时间": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "项目路径": str(config.BASE_DIR),
+        "项目路径": str(project_config.BASE_DIR),
     }
 
     # 写入环境文件
-    env_file = config.ALLURE_RESULTS / "environment.properties"
+    env_file = project_config.ALLURE_RESULTS / "environment.properties"
     with open(env_file, 'w', encoding='utf-8') as f:
         for key, value in allure_env.items():
             f.write(f"{key}={value}\n")
@@ -277,9 +281,11 @@ def pytest_sessionfinish(session, exitstatus):
     # 生成测试结果汇总
     if hasattr(session, 'testscollected'):
         total = session.testscollected
-        passed = len(session.testscollected) - len(session.testsfailed) - len(session.testsskipped)
-        failed = len(session.testsfailed)
-        skipped = len(session.testsskipped)
+        failed = session.testsfailed
+        # skipped = session.testsskipped && 0
+        skipped = 0 #TODO:无 testsskipped 参数
+        passed = total - failed - skipped
+        # passed = len(session.testscollected) - len(session.testsfailed) - len(session.testsskipped)
 
         summary = {
             "total": total,
@@ -289,6 +295,6 @@ def pytest_sessionfinish(session, exitstatus):
             "success_rate": f"{(passed / total * 100):.1f}%" if total > 0 else "0%"
         }
 
-        summary_file = config.ALLURE_RESULTS / "summary.json"
+        summary_file = project_config.ALLURE_RESULTS / "summary.json"
         with open(summary_file, 'w', encoding='utf-8') as f:
             json.dump(summary, f, ensure_ascii=False, indent=2)

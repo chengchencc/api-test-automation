@@ -4,8 +4,8 @@ from typing import Dict, Any, Optional, Tuple
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from ..config.logger import logger, TestLogger
-from ..config.configuration import config
-from template_engine import template_engine
+from ..config.configuration import project_config
+from .template_engine import template_engine
 
 
 class RequestClient:
@@ -25,9 +25,9 @@ class RequestClient:
             max_retries: 最大重试次数
             default_headers: 默认请求头
         """
-        self.base_url = base_url or config.BASE_URL
-        self.timeout = timeout or config.TIMEOUT
-        self.max_retries = max_retries or config.MAX_RETRY
+        self.base_url = base_url or project_config.BASE_URL
+        self.timeout = timeout or project_config.TIMEOUT
+        self.max_retries = max_retries or project_config.MAX_RETRY
         self.session = requests.Session()
         self.test_logger = TestLogger("RequestClient")
 
@@ -128,7 +128,7 @@ class RequestClient:
             'method': method.upper(),
             'url': url,
             'timeout': self.timeout,
-            'verify': config.VERIFY_SSL,
+            'verify': project_config.VERIFY_SSL,
             **kwargs
         }
 

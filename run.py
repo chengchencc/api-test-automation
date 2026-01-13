@@ -8,7 +8,7 @@ import sys
 import argparse
 import webbrowser
 import time
-from src.config.configuration import config
+from src.config.configuration import project_config
 from src.config.logger import logger
 
 print("sys.path:")
@@ -48,7 +48,7 @@ class TestRunner:
         # 基本pytest命令
         cmd:list[str] = [
             "pytest",
-            f"--alluredir={config.ALLURE_RESULTS}",
+            f"--alluredir={project_config.ALLURE_RESULTS}",
             "--clean-alluredir",
             "-v",
             "--disable-warnings",
@@ -87,7 +87,7 @@ class TestRunner:
 
         # HTML报告
         if html_report:
-            html_report_path = config.get_html_report_path()
+            html_report_path = project_config.get_html_report_path()
             cmd.extend([
                 f"--html={html_report_path}",
                 "--self-contained-html"
@@ -129,15 +129,15 @@ class TestRunner:
         """生成Allure报告"""
         logger.info("生成Allure报告...")
 
-        if not config.ALLURE_RESULTS.exists() or not any(config.ALLURE_RESULTS.iterdir()):
+        if not project_config.ALLURE_RESULTS.exists() or not any(project_config.ALLURE_RESULTS.iterdir()):
             logger.warning("没有测试结果，跳过生成Allure报告")
             return 0
 
         # 生成Allure报告
         cmd = [
             "allure", "generate",
-            str(config.ALLURE_RESULTS),
-            "-o", str(config.ALLURE_REPORT),
+            str(project_config.ALLURE_RESULTS),
+            "-o", str(project_config.ALLURE_REPORT),
             "--clean"
         ]
 
@@ -145,7 +145,7 @@ class TestRunner:
             result = subprocess.run(cmd, capture_output=True, text=True)
 
             if result.returncode == 0:
-                report_url = config.get_allure_report_url()
+                report_url = project_config.get_allure_report_url()
                 logger.info(f"Allure报告生成成功: {report_url}")
 
                 # 在浏览器中打开报告
@@ -166,8 +166,8 @@ class TestRunner:
 
     def open_allure_report(self):
         """打开Allure报告"""
-        if (config.ALLURE_REPORT / "index.html").exists():
-            report_url = config.get_allure_report_url()
+        if (project_config.ALLURE_REPORT / "index.html").exists():
+            report_url = project_config.get_allure_report_url()
             logger.info(f"在浏览器中打开报告: {report_url}")
 
             try:
@@ -179,7 +179,7 @@ class TestRunner:
 
     def open_html_report(self):
         """打开HTML报告"""
-        html_report_path = config.get_html_report_path()
+        html_report_path = project_config.get_html_report_path()
         if html_report_path.exists():
             report_url = f"file://{html_report_path.absolute()}"
             logger.info(f"在浏览器中打开HTML报告: {report_url}")
@@ -224,8 +224,8 @@ class TestRunner:
 
         try:
             # 验证Excel文件
-            if not config.EXCEL_FILE.exists():
-                logger.error(f"测试数据文件不存在: {config.EXCEL_FILE}")
+            if not project_config.EXCEL_FILE.exists():
+                logger.error(f"测试数据文件不存在: {project_config.EXCEL_FILE}")
                 return 1
 
             # 读取测试用例
@@ -285,7 +285,7 @@ class TestRunner:
 
         logger.info("清理测试报告...")
 
-        for report_dir in [config.ALLURE_RESULTS, config.ALLURE_REPORT, config.REPORT_DIR]:
+        for report_dir in [project_config.ALLURE_RESULTS, project_config.ALLURE_REPORT, project_config.REPORT_DIR]:
             if report_dir.exists():
                 try:
                     shutil.rmtree(report_dir)
@@ -294,7 +294,7 @@ class TestRunner:
                     logger.error(f"删除失败 {report_dir}: {e}")
 
         # 重新创建目录
-        config.REPORT_DIR.mkdir(exist_ok=True)
+        project_config.REPORT_DIR.mkdir(exist_ok=True)
         logger.info("清理完成")
 
     def generate_excel_template(self):
@@ -304,7 +304,7 @@ class TestRunner:
         logger.info("生成Excel模板文件...")
 
         # 创建模板文件路径
-        template_file = config.TEST_DATA_DIR / "api_test_cases_template.xlsx"
+        template_file = project_config.TEMPLATE_DIR / "api_test_cases_template.xlsx"
 
         # 定义测试用例模板
         test_cases_data = [
@@ -442,7 +442,7 @@ def main():
 
     # 测试运行选项
     parser.add_argument("--type", "-t",
-                        choices=["all", "smoke", "api", "regression", "performance"],
+                        choices=["all", "smoke", "api", "regression", "performance","data_driven"],
                         default="all",
                         help="测试类型")
     parser.add_argument("--parallel", "-p",

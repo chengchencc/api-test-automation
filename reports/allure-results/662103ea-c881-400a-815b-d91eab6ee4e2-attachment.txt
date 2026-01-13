@@ -1,0 +1,12 @@
+INFO     api_test:conftest.py:105 ============================================================
+INFO     api_test:conftest.py:106 开始测试会话
+INFO     api_test:conftest.py:107 测试时间: 2026-01-12 20:12:47
+INFO     api_test:conftest.py:108 项目目录: D:\code\demo\api-test-demo\output
+INFO     api_test:conftest.py:109 测试数据: D:\code\demo\api-test-demo\output\test_data\api_test_cases.xlsx
+INFO     api_test:conftest.py:110 基础URL: http://api.example.com
+INFO     api_test:conftest.py:111 ============================================================
+INFO     api_test:conftest.py:125 开始测试: test_name
+INFO     api_test:conftest.py:135 结束测试: test_name, 耗时: 0.01秒
+INFO     api_test:conftest.py:116 ============================================================
+INFO     api_test:conftest.py:117 测试会话结束
+INFO     api_test:conftest.py:118 ============================================================

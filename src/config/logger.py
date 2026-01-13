@@ -3,7 +3,7 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
-from .configuration import config
+from .configuration import project_config
 
 
 class JSONFormatter(logging.Formatter):
@@ -38,21 +38,21 @@ def setup_logger(name: str = "api_test"):
     if logger.handlers:
         return logger
     
-    logger.setLevel(getattr(logging, config.LOG_LEVEL))
+    logger.setLevel(getattr(logging, project_config.LOG_LEVEL))
     
     # 控制台handler
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(config.LOG_LEVEL)
+    console_handler.setLevel(project_config.LOG_LEVEL)
     
-    if config.LOG_LEVEL == "DEBUG":
-        console_format = logging.Formatter(config.LOG_FORMAT)
+    if project_config.LOG_LEVEL == "DEBUG":
+        console_format = logging.Formatter(project_config.LOG_FORMAT)
     else:
         console_format = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
     
     console_handler.setFormatter(console_format)
     
     # 文件handler
-    log_file = config.LOG_DIR / f"test_{datetime.now().strftime('%Y%m%d')}.log"
+    log_file = project_config.LOG_DIR / f"test_{datetime.now().strftime('%Y%m%d')}.log"
     file_handler = logging.FileHandler(log_file, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     
@@ -61,7 +61,7 @@ def setup_logger(name: str = "api_test"):
     file_handler.setFormatter(json_formatter)
     
     # 错误日志文件handler
-    error_file = config.LOG_DIR / f"error_{datetime.now().strftime('%Y%m%d')}.log"
+    error_file = project_config.LOG_DIR / f"error_{datetime.now().strftime('%Y%m%d')}.log"
     error_handler = logging.FileHandler(error_file, encoding='utf-8')
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(json_formatter)

@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 from typing import Any, Dict
 from jinja2 import Environment, BaseLoader, StrictUndefined, TemplateError, Undefined
 from jinja2 import select_autoescape
@@ -12,7 +13,7 @@ import os
 import inspect
 from datetime import datetime, timedelta
 from faker import Faker
-from ..config.logger import logger
+from src.config.logger import logger
 
 
 class TemplateEngine:
@@ -626,3 +627,20 @@ class TemplateEngine:
 
 # 创建全局模板引擎实例
 template_engine = TemplateEngine()
+
+
+if __name__ == "__main__":
+    print(__file__)
+    print(sys.path)
+    context = {
+        "a": "aa",
+        "b": "bb",
+    }
+    template_engine.register_function("test", lambda x, y: x + y)
+    template_engine.update_context(**context)
+    print(template_engine.render("hello,{{ a }}"))
+    print(template_engine.render("hello,{{ b }}"))
+    print(template_engine.render("hello,{{ c }}"))
+    print(template_engine.render("now(),{{ now() | }}"))
+    print(template_engine.render("md5,{{ 'aaaa'|md5 }}"))
+    print(template_engine.render("json,{{ '{name:1;ba:2}' | to_json }}"))

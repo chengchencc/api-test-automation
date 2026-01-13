@@ -67,4 +67,4 @@ class Config:
         return cls.REPORT_DIR / "report.html"
 
 
-config = Config()
+project_config = Config()

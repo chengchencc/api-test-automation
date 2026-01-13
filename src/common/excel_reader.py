@@ -4,8 +4,8 @@ import yaml
 from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 from src.config.logger import logger
-from src.config.configuration import config
-from template_engine import template_engine
+from src.config.configuration import project_config
+from .template_engine import template_engine
 
 
 class ExcelReader:
@@ -18,7 +18,7 @@ class ExcelReader:
         Args:
             excel_file: Excel文件路径
         """
-        self.excel_file = Path(excel_file) if excel_file else config.EXCEL_FILE
+        self.excel_file = Path(excel_file) if excel_file else project_config.EXCEL_FILE
         self._data_cache = {}
         self._sheet_cache = {}
 
@@ -111,7 +111,7 @@ class ExcelReader:
             missing_columns = [col for col in required_columns if col not in df.columns]
 
             if missing_columns:
-                logger.warning(f"工作表缺少列: {missing_columns}")
+                logger.warning(f"工作表[{sheet_name}]缺少列: {missing_columns}")
 
             test_cases = []
 
@@ -245,7 +245,7 @@ class ExcelReader:
         suites = {}
 
         for sheet_name in sheet_names:
-            if sheet_name.lower() not in ['config', 'setup', 'teardown']:
+            if sheet_name.lower() not in ['config', 'setup', 'teardown','说明']:
                 try:
                     test_cases = self.get_test_cases(sheet_name, render_templates=False)
                     if test_cases:

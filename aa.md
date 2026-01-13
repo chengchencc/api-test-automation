@@ -1059,7 +1059,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def test_env(request):
     """测试环境fixture"""
-    return request.config.getoption("--env")
+    return request.project_config.getoption("--env")
 
 
 # Allure环境文件

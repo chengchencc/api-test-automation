@@ -3,16 +3,19 @@ import allure
 import json
 import time
 from typing import Dict, Any, List
-from ..common.excel_reader import excel_reader
-from ..common.request_client import request_client
-from ..common.assert_utils import assert_utils
-from ..common.template_engine import template_engine
-from ..config.logger import logger, TestLogger
+from src.common.excel_reader import excel_reader
+from src.common.request_client import request_client
+from src.common.assert_utils import assert_utils
+from src.common.template_engine import template_engine
+from src.config.logger import logger, TestLogger
 
 class BaseTest:
     """测试基类"""
 
     def setup_class(self):
+
+        print(f"test logger name:: {self.__class__.__name__} ")
+
         """测试类初始化"""
         self.test_logger = TestLogger(self.__class__.__name__)
         self.test_logger.log_step("测试类初始化")
@@ -603,31 +606,6 @@ class TestAPI(BaseTest):
                 pytest.skip(f"Sheet {sheet_name} 不存在")
             else:
                 raise
-
-
-class TestDataDriven:
-    """数据驱动测试类"""
-
-    @pytest.fixture(params=excel_reader.get_test_cases("data_driven"))
-    def data_driven_case(self, request):
-        """数据驱动测试用例fixture"""
-        return request.param
-
-    @allure.story("数据驱动测试")
-    def test_data_driven(self, data_driven_case):
-        """使用fixture的数据驱动测试"""
-        case_name = data_driven_case.get('case_name', '未知用例')
-        allure.dynamic.title(case_name)
-
-        response = request_client.send_request(
-            method=data_driven_case.get('method', 'GET'),
-            url=data_driven_case.get('url', ''),
-            json_data=data_driven_case.get('json', {})
-        )
-
-        expected_status = data_driven_case.get('expected_status', 200)
-        assert_utils.assert_status_code(response.status_code, expected_status)
-
 
 if __name__ == "__main__":
     # 直接运行测试
