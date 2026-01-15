@@ -92,8 +92,9 @@ class TestLogger:
             "data": data,
             "headers": headers
         }
-        self.logger.info(f"请求信息: {method} {url}", extra={"extra_data": request_info})
-    
+        # self.logger.info(f"请求信息: {method} {url} {headers}", extra={"extra_data": request_info})
+        self.logger.info(f"请求信息: {method} {url} {headers}", extra=request_info)
+
     def log_response(self, response):
         """记录响应日志"""
         try:
@@ -109,7 +110,7 @@ class TestLogger:
         }
         
         level = logging.ERROR if response.status_code >= 400 else logging.INFO
-        self.logger.log(level, f"响应: {response.status_code}", extra={"extra_data": response_info})
+        self.logger.log(level, f"响应: {response.status_code}，data:{response_data}", extra={"extra_data": response_info})
     
     def log_step(self, step_name: str, details: dict = None):
         """记录测试步骤"""

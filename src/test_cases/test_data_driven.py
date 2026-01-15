@@ -32,6 +32,9 @@ class TestDataDriven:
         expected_status = data_driven_case.get('expected_status', 200)
         assert_utils.assert_status_code(response.status_code, expected_status)
 
+    def test_api(self):
+        request_client.set_header('Content-Type', 'application/json')
+
 
 if __name__ == "__main__":
     print(__file__)

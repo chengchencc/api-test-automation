@@ -108,7 +108,13 @@ def setup_test_session():
     logger.info(f"项目目录: {project_config.BASE_DIR}")
     logger.info(f"测试数据: {project_config.EXCEL_FILE}")
     logger.info(f"基础URL: {project_config.BASE_URL}")
+    logger.info(f"使用AccessToken: {project_config.TEST_AUTH_TOKEN}")
     logger.info("=" * 60)
+
+    # request 增加 auth token
+
+    from src.common.request_client import request_client
+    request_client.set_auth("Bearer",**{"token":project_config.TEST_AUTH_TOKEN})
 
     # 创建测试环境
     yield

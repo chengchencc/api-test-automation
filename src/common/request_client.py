@@ -212,7 +212,7 @@ class RequestClient:
             elapsed = time.time() - start_time
 
             # 添加响应时间
-            response.elapsed = type('obj', (object,), {'total_seconds': lambda: elapsed})()
+            response.elapsed = type('obj', (object,), {'total_seconds': lambda self: elapsed})()
 
             # 记录响应
             self.test_logger.log_response(response)

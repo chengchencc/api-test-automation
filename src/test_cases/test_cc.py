@@ -1,5 +1,7 @@
 import sys
 
+from src.common.request_client import request_client
+
 
 def test_name():
     print(__name__)
