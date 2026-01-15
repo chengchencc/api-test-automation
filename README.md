@@ -48,38 +48,93 @@
 - 🔐 **OAuth 2.0支持**：内置OAuth 2.0客户端，支持多种认证方式
 - 🎨 **模板化断言**：支持JSON Schema、正则匹配、深度比较等多种断言方式
 
-## 📁 项目结构
+## 📁 项目结构（改进版）
 
 ```
 api-test-demo/
-├── src/                    # 源代码目录
-│   ├── common/            # 公共工具类
-│   │   ├── excel_reader.py    # Excel读取器
-│   │   ├── template_engine.py # Jinja2模板引擎
-│   │   ├── request_client.py  # HTTP请求客户端
-│   │   └── assert_utils.py    # 断言工具
-│   ├── config/            # 配置管理
-│   │   ├── configuration.py   # 项目配置
-│   │   └── logger.py          # 日志配置
-│   ├── oauth/             # OAuth认证模块
-│   │   ├── oauth2_client.py   # OAuth 2.0客户端
-│   │   └── oauth_request_client.py
-│   └── test_cases/        # 测试用例实现
-│       ├── test_api.py        # API测试用例
-│       ├── test_data_driven.py # 数据驱动测试
-│       └── test_oauth2.py     # OAuth测试用例
-├── test/                  # 自动化工具单元测试目录
-├── output/                # 输出目录
-│   ├── test_data/         # 测试数据（Excel文件）
-│   ├── logs/              # 日志文件
-│   ├── reports/           # 测试报告
-│   └── templates/         # 模板文件
-├── conftest.py           # pytest配置文件
-├── pytest.ini           # pytest配置
-├── run.py               # 主运行脚本
-├── requirements.txt     # 依赖包列表
-├── .env.example        # 环境变量示例
-└── README.md           # 项目说明
+├── src/                          # 源代码目录（重构）
+│   ├── core/                     # 核心框架模块
+│   │   ├── base_test.py          # 测试基类（统一生命周期管理）
+│   │   ├── test_runner.py        # 测试运行器
+│   │   └── test_suite.py         # 测试套件管理
+│   ├── clients/                  # 客户端模块
+│   │   ├── http_client.py        # HTTP客户端（支持异步）
+│   │   ├── oauth_client.py       # OAuth客户端
+│   │   └── database_client.py    # 数据库客户端
+│   ├── data/                     # 数据管理模块
+│   │   ├── data_loader.py        # 数据加载器（多格式支持）
+│   │   ├── data_generator.py     # 数据生成器
+│   │   ├── data_validator.py     # 数据验证器
+│   │   └── data_extractor.py     # 数据提取器
+│   ├── engine/                   # 引擎模块
+│   │   ├── template_engine.py    # 模板引擎（Jinja2增强）
+│   │   ├── assertion_engine.py   # 断言引擎
+│   │   └── hook_engine.py        # 钩子引擎
+│   ├── models/                   # 数据模型模块
+│   │   ├── test_case.py          # 测试用例模型
+│   │   ├── test_data.py          # 测试数据模型
+│   │   └── test_result.py        # 测试结果模型
+│   ├── utils/                    # 工具模块
+│   │   ├── logger.py             # 日志工具（JSON格式）
+│   │   ├── file_utils.py         # 文件工具
+│   │   ├── time_utils.py         # 时间工具
+│   │   └── security_utils.py     # 安全工具
+│   ├── config/                   # 配置模块
+│   │   ├── settings.py           # 配置设置（多环境支持）
+│   │   ├── env_manager.py        # 环境管理器
+│   │   └── config_validator.py   # 配置验证器
+│   └── plugins/                  # 插件模块
+│       ├── base_plugin.py        # 插件基类
+│       ├── report_plugin.py      # 报告插件
+│       └── auth_plugin.py        # 认证插件
+├── tests/                        # 业务测试目录（用户测试用例）
+│   ├── api/                      # API测试
+│   │   ├── test_user_api.py      # 用户API测试示例
+│   │   └── test_order_api.py     # 订单API测试
+│   ├── smoke/                    # 冒烟测试
+│   ├── regression/               # 回归测试
+│   └── performance/              # 性能测试
+├── data/                         # 测试数据目录（结构化）
+│   ├── excel/                    # Excel数据
+│   │   ├── test_cases.xlsx       # 测试用例
+│   │   └── test_data.xlsx        # 测试数据
+│   ├── json/                     # JSON数据
+│   │   └── api_schemas.json      # API Schema定义
+│   ├── yaml/                     # YAML数据
+│   │   └── test_config.yaml      # 测试配置
+│   └── sql/                      # SQL脚本
+│       └── test_data.sql         # 测试数据SQL
+├── config/                       # 配置文件目录
+│   ├── settings.yaml             # 主配置文件
+│   ├── env/                      # 环境配置
+│   │   ├── development.yaml      # 开发环境
+│   │   ├── testing.yaml          # 测试环境
+│   │   └── production.yaml       # 生产环境
+│   └── plugins/                  # 插件配置
+├── reports/                      # 测试报告目录
+│   ├── allure/                   # Allure报告
+│   ├── html/                     # HTML报告
+│   └── json/                     # JSON报告
+├── logs/                         # 日志目录
+│   ├── test/                     # 测试日志
+│   └── framework/                # 框架日志
+├── docs/                         # 文档目录
+│   ├── api/                      # API文档
+│   ├── examples/                 # 示例文档
+│   └── guides/                   # 使用指南
+├── scripts/                      # 脚本目录
+│   ├── run.py                    # 主运行脚本（简化）
+│   ├── generate_data.py          # 数据生成脚本
+│   ├── validate_config.py        # 配置验证脚本
+│   └── generate_report.py        # 报告生成脚本
+├── conftest.py                   # pytest配置（优化）
+├── pytest.ini                    # pytest配置（增强）
+├── requirements.txt              # 依赖包列表
+├── requirements-dev.txt          # 开发依赖
+├── .env.example                  # 环境变量示例
+├── .gitignore                    # Git忽略文件
+├── README.md                     # 项目说明
+└── CHANGELOG.md                  # 变更日志
 ```
 
 ## 🚀 快速开始
@@ -151,26 +206,69 @@ python run.py --template
 ### 4. 运行测试
 
 ```shell
+# 使用新的脚本运行测试
+cd scripts
+
 # 运行所有测试
-python run.py
+python run.py run tests/
+
+# 运行API测试
+python run.py run tests/api/ -t api
 
 # 运行冒烟测试
-python run.py --type smoke
+python run.py run tests/ -t smoke
 
-# 并行运行测试（4个工作进程）
-python run.py --parallel --workers 4
+# 并行运行测试
+python run.py run tests/ -p -w 4
 
-# 失败重试（最多重试2次）
-python run.py --reruns 2
+# 失败重试
+python run.py run tests/ -r 2
 
-# 生成并打开Allure报告
-python run.py --report --open
+# 生成并打开报告
+python run.py run tests/ -R -o
 
-# 验证测试数据
-python run.py --validate
+# 验证配置
+python run.py validate
 
-# 列出所有测试用例
-python run.py --list
+# 列出测试用例
+python run.py list
+
+# 生成Excel模板
+python run.py template
+```
+
+### 5. 使用新的测试基类
+
+```python
+# tests/api/test_example.py
+import allure
+from src.core.base_test import BaseTest
+
+@allure.epic("示例测试")
+class TestExample(BaseTest):
+
+    def test_example(self):
+        """示例测试用例"""
+        # 使用模板引擎
+        username = self.render_template("{{ random_email() }}")
+
+        # 发起HTTP请求
+        response = self.make_request(
+            method="POST",
+            url="http://api.example.com/login",
+            json={"username": username, "password": "Test@123456"}
+        )
+
+        # 使用断言方法
+        self.assert_equal(response.status_code, 200)
+        self.assert_in("token", response.json())
+
+        # 附加数据到报告
+        self.attach_json("响应数据", response.json())
+
+        # 记录步骤
+        with self.step("验证登录成功"):
+            self.logger.info("登录测试通过")
 ```
 
 ## 📊 Excel测试用例编写指南
@@ -382,6 +480,95 @@ depends_on: TC002
 如有问题或建议，请通过以下方式联系：
 - 提交 [Issue](https://github.com/yourusername/api-test-demo/issues)
 - 发送邮件：your-email@example.com
+
+## 🔄 迁移指南
+
+### 从旧结构迁移到新结构
+
+#### 1. 测试用例迁移
+
+**旧结构：**
+```python
+# src/test_cases/test_api.py
+from src.common.excel_reader import excel_reader
+from src.common.request_client import request_client
+from src.common.assert_utils import assert_utils
+
+class BaseTest:
+    def setup_class(self):
+        self.test_logger = TestLogger(self.__class__.__name__)
+```
+
+**新结构：**
+```python
+# tests/api/test_user_api.py
+from src.core.base_test import BaseTest
+
+class TestUserAPI(BaseTest):
+    def _before_class(self):
+        self.logger.info("测试类初始化")
+
+    def test_example(self):
+        # 使用新的工具方法
+        response = self.make_request(...)
+        self.assert_equal(response.status_code, 200)
+```
+
+#### 2. 配置迁移
+
+**旧结构：**
+```python
+from src.config.configuration import project_config
+BASE_URL = project_config.BASE_URL
+```
+
+**新结构：**
+```python
+from src.config.settings import settings
+BASE_URL = settings.API_BASE_URL
+```
+
+#### 3. 数据加载迁移
+
+**旧结构：**
+```python
+from src.common.excel_reader import excel_reader
+test_cases = excel_reader.get_test_cases("test_cases")
+```
+
+**新结构：**
+```python
+from src.data.data_loader import DataLoader
+data_loader = DataLoader()
+test_cases = data_loader.get_test_cases("test_cases")
+```
+
+#### 4. 主要变化总结
+
+| 旧模块 | 新模块 | 说明 |
+|--------|--------|------|
+| `src/common/excel_reader.py` | `src/data/data_loader.py` | 支持多种数据格式 |
+| `src/common/request_client.py` | `src/clients/http_client.py` | 支持异步请求 |
+| `src/common/assert_utils.py` | `src/engine/assertion_engine.py` | 增强断言功能 |
+| `src/common/template_engine.py` | `src/engine/template_engine.py` | 优化模板引擎 |
+| `src/config/configuration.py` | `src/config/settings.py` | 多环境配置支持 |
+| `src/config/logger.py` | `src/utils/logger.py` | JSON格式日志 |
+| `src/test_cases/` | `tests/` | 测试用例目录重构 |
+
+### 5. 向后兼容性
+
+框架提供了向后兼容的适配器：
+
+```python
+# 兼容性导入（不建议长期使用）
+from src.compat.legacy import (
+    excel_reader,  # 指向新的DataLoader
+    request_client,  # 指向新的HttpClient
+    assert_utils,  # 指向新的AssertionEngine
+    template_engine,  # 指向新的TemplateEngine
+    project_config,  # 指向新的Settings
+)
+```
 
 ## 🙏 致谢
 

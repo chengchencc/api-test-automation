@@ -1,0 +1,77 @@
+# API自动化测试框架主配置文件
+
+# 项目配置
+project:
+  name: "API自动化测试框架"
+  version: "1.0.0"
+  description: "基于Excel的API自动化测试框架"
+
+# API配置
+api:
+  base_url: "http://localhost:8000"
+  timeout: 30
+  max_retries: 3
+  verify_ssl: true
+  default_headers:
+    Content-Type: "application/json"
+    User-Agent: "API-Test-Framework/1.0.0"
+
+# 测试配置
+test:
+  timeout: 30
+  max_retries: 3
+  parallel: false
+  workers: 4
+  reruns: 0
+  markers:
+    smoke: "冒烟测试"
+    regression: "回归测试"
+    api: "API接口测试"
+    performance: "性能测试"
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+  file: "test.log"
+  json_format: true
+
+# 报告配置
+report:
+  formats:
+    - "allure"
+    - "html"
+  allure:
+    results_dir: "reports/allure-results"
+    report_dir: "reports/allure-report"
+  html:
+    report_dir: "reports/html"
+    title: "API测试报告"
+
+# 数据配置
+data:
+  excel:
+    test_cases: "data/excel/test_cases.xlsx"
+    test_data: "data/excel/test_data.xlsx"
+  json:
+    schemas: "data/json/api_schemas.json"
+  yaml:
+    config: "data/yaml/test_config.yaml"
+
+# 模板配置
+template:
+  auto_reload: false
+  strict_mode: false
+  cache_size: 100
+
+# 缓存配置
+cache:
+  enabled: true
+  ttl: 300  # 5分钟
+  max_size: 1000
+
+# 插件配置
+plugins:
+  enabled: true
+  directory: "src/plugins"
+  auto_discover: true
