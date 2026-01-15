@@ -1,9 +1,9 @@
+"""
+Jinja2模板引擎实现
+"""
 import json
 import re
 import sys
-from typing import Any, Dict
-from jinja2 import Environment, BaseLoader, StrictUndefined, TemplateError, Undefined
-from jinja2 import select_autoescape
 import time
 import random
 import string
@@ -11,25 +11,22 @@ import uuid
 import hashlib
 import os
 import inspect
+from typing import Any, Dict
 from datetime import datetime, timedelta
+from jinja2 import Environment, BaseLoader, StrictUndefined, TemplateError, Undefined
+from jinja2 import select_autoescape
 from faker import Faker
+
+from .base import TemplateEngineBase
 from src.config.logger import logger
 
 
-class TemplateEngine:
-    """
-    基于Jinja2的模板引擎
-    支持复杂的动态变量渲染
-    """
+class Jinja2Engine(TemplateEngineBase):
+    """基于Jinja2的模板引擎"""
 
     def __init__(self, strict_mode: bool = False, auto_reload: bool = True):
-        """
-        初始化模板引擎
+        super().__init__(strict_mode, auto_reload)
 
-        Args:
-            strict_mode: 严格模式，如果变量未定义则报错
-            auto_reload: 自动重新加载模板
-        """
         # 创建Jinja2环境
         self.env = Environment(
             loader=BaseLoader(),
@@ -41,21 +38,12 @@ class TemplateEngine:
             extensions=['jinja2.ext.do', 'jinja2.ext.loopcontrols']
         )
 
-        # 上下文数据
-        self.context = {}
-
-        # 序列计数器
-        self.sequences: Dict[str, int] = {}
-
-        # 缓存已编译的模板
-        self.template_cache: Dict[str, Any] = {}
-
         # 注册功能
         self._register_filters()
         self._register_functions()
         self._register_tests()
 
-        logger.info("模板引擎初始化完成")
+        logger.info("Jinja2模板引擎初始化完成")
 
     def _register_filters(self):
         """注册Jinja2过滤器"""
@@ -475,18 +463,6 @@ class TemplateEngine:
 
         logger.debug("Jinja2测试函数注册完成")
 
-    def update_context(self, **kwargs):
-        """更新上下文变量"""
-        self.context.update(kwargs)
-        logger.debug(f"更新上下文: {list(kwargs.keys())}")
-
-    def clear_context(self):
-        """清空上下文"""
-        self.context.clear()
-        self.sequences.clear()
-        self.template_cache.clear()
-        logger.debug("清空上下文")
-
     def render(self, template: Any, extra_context: Dict = None, **kwargs) -> Any:
         """
         渲染模板
@@ -509,35 +485,7 @@ class TemplateEngine:
         # 渲染数据
         return self._render_recursive(template, context)
 
-    def _render_recursive(self, data: Any, context: Dict) -> Any:
-        """递归渲染数据"""
-
-        if isinstance(data, str):
-            # 处理字符串模板
-            return self._render_string(data, context)
-
-        elif isinstance(data, dict):
-            # 处理字典
-            result = {}
-            for key, value in data.items():
-                # 渲染键
-                rendered_key = self._render_recursive(key, context)
-                # 渲染值
-                rendered_value = self._render_recursive(value, context)
-                result[rendered_key] = rendered_value
-            return result
-
-        elif isinstance(data, (list, tuple, set)):
-            # 处理序列
-            result_type = type(data)
-            rendered_items = [self._render_recursive(item, context) for item in data]
-            return result_type(rendered_items)
-
-        else:
-            # 其他类型直接返回
-            return data
-
-    def _render_string(self, template_str: str, context: Dict) -> str:
+    def render_string(self, template_str: str, **kwargs) -> str:
         """渲染字符串模板"""
         if not isinstance(template_str, str):
             return template_str
@@ -545,6 +493,11 @@ class TemplateEngine:
         # 检查是否包含模板语法
         if not self._has_template_syntax(template_str):
             return template_str
+
+        # 合并上下文
+        context = {**self.context}
+        if kwargs:
+            context.update(kwargs)
 
         # 编译和缓存模板
         if template_str in self.template_cache:
@@ -564,31 +517,12 @@ class TemplateEngine:
             logger.warning(f"模板渲染失败: {e}, 模板: {template_str[:100]}...")
             return template_str
 
-    def _has_template_syntax(self, text: str) -> bool:
-        """检查字符串是否包含模板语法"""
-        # 检查是否包含Jinja2模板语法
-        patterns = [
-            r'\{\{.*?\}\}',  # 变量 {{ var }}
-            r'\{\%.*?\%\}',  # 语句 {% statement %}
-            r'\{\#.*?\#\}',  # 注释 {# comment #}
-        ]
-
-        for pattern in patterns:
-            if re.search(pattern, text, re.DOTALL):
-                return True
-
-        return False
-
-    def render_string(self, template_str: str, **kwargs) -> str:
-        """渲染字符串模板（快捷方法）"""
-        return self.render(template_str, **kwargs)
-
     def render_file(self, filepath: str, **kwargs) -> str:
         """渲染文件模板"""
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
-            return self.render(content, **kwargs)
+            return self.render_string(content, **kwargs)
         except FileNotFoundError:
             logger.error(f"模板文件不存在: {filepath}")
             return ""
@@ -624,23 +558,17 @@ class TemplateEngine:
         self.env.tests[name] = func
         logger.debug(f"注册测试函数: {name}")
 
+    def _has_template_syntax(self, text: str) -> bool:
+        """检查字符串是否包含模板语法"""
+        # 检查是否包含Jinja2模板语法
+        patterns = [
+            r'\{\{.*?\}\}',  # 变量 {{ var }}
+            r'\{\%.*?\%\}',  # 语句 {% statement %}
+            r'\{\#.*?\#\}',  # 注释 {# comment #}
+        ]
 
-# 创建全局模板引擎实例
-template_engine = TemplateEngine()
+        for pattern in patterns:
+            if re.search(pattern, text, re.DOTALL):
+                return True
 
-
-if __name__ == "__main__":
-    print(__file__)
-    print(sys.path)
-    context = {
-        "a": "aa",
-        "b": "bb",
-    }
-    template_engine.register_function("test", lambda x, y: x + y)
-    template_engine.update_context(**context)
-    print(template_engine.render("hello,{{ a }}"))
-    print(template_engine.render("hello,{{ b }}"))
-    print(template_engine.render("hello,{{ c }}"))
-    print(template_engine.render("now(),{{ now() | }}"))
-    print(template_engine.render("md5,{{ 'aaaa'|md5 }}"))
-    print(template_engine.render("json,{{ '{name:1;ba:2}' | to_json }}"))
+        return False

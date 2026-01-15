@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 from src.common.excel_reader import excel_reader
 from src.common.request_client import request_client
 from src.common.assert_utils import assert_utils
-from src.common.template_engine import template_engine
+from src.common.template_engine_manager import template_engine
 from src.config.logger import logger, TestLogger
 
 class BaseTest:

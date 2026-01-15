@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from src.config.settings import project_config
 from src.config.logger import logger
-from src.common.template_engine import template_engine
+from src.common.template_engine_manager import template_engine
 
 import sys
 

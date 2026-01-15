@@ -5,8 +5,13 @@ from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 from src.config.logger import logger
 from src.config.settings import project_config
-from .template_engine import template_engine
+from .template_engine_manager import template_engine
 
+# from .template_engines.factory import TemplateEngineFactory
+#
+# factory = TemplateEngineFactory()
+#
+# template_engine = factory.create_engine()
 
 class ExcelReader:
     """Excel数据读取器（支持Jinja2模板）"""

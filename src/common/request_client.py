@@ -5,7 +5,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from ..config.logger import logger, TestLogger
 from ..config.settings import project_config
-from .template_engine import template_engine
+from .template_engine_manager import template_engine
 
 
 class RequestClient:

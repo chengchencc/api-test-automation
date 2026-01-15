@@ -812,7 +812,7 @@ from datetime import datetime
 from pathlib import Path
 from src.config import config
 from src.config.logger import logger
-from src.common.template_engine import template_engine
+from src.common.template_engine_manager import template_engine
 
 
 def pytest_configure(config):

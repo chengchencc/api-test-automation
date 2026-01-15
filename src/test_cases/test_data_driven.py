@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 from src.common.excel_reader import excel_reader
 from src.common.request_client import request_client
 from src.common.assert_utils import assert_utils
-from src.common.template_engine import template_engine
+from src.common.template_engine_manager import template_engine
 from src.config.logger import logger, TestLogger
 
 class TestDataDriven:
@@ -31,9 +31,6 @@ class TestDataDriven:
 
         expected_status = data_driven_case.get('expected_status', 200)
         assert_utils.assert_status_code(response.status_code, expected_status)
-
-    def test_api(self):
-        request_client.set_header('Content-Type', 'application/json')
 
 
 if __name__ == "__main__":
