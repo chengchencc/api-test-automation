@@ -8,7 +8,7 @@ import sys
 import argparse
 import webbrowser
 import time
-from src.config.configuration import project_config
+from src.config.settings import project_config
 from src.config.logger import logger
 
 print("sys.path:")

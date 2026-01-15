@@ -7,7 +7,7 @@ from pathlib import Path
 import requests
 from datetime import datetime, timedelta
 from src.config.logger import logger
-from src.config.configuration import project_config
+from src.config.settings import project_config
 
 
 class OAuth2Token:

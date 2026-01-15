@@ -1,4 +1,4 @@
-from src.config.configuration import project_config
+from src.config.settings import project_config
 
 if __name__ == "__main__":
     from src.common.request_client import request_client

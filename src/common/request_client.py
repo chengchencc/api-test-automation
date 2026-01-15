@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, Tuple
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from ..config.logger import logger, TestLogger
-from ..config.configuration import project_config
+from ..config.settings import project_config
 from .template_engine import template_engine
 
 

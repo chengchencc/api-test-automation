@@ -4,7 +4,7 @@ import yaml
 from typing import Dict, List, Any, Optional, Union
 from pathlib import Path
 from src.config.logger import logger
-from src.config.configuration import project_config
+from src.config.settings import project_config
 from .template_engine import template_engine
 
 

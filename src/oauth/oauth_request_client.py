@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, Union, Tuple
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from src.config.logger import logger, TestLogger
-from src.config.configuration import project_config as config
+from src.config.settings import project_config as config
 from src.common.template_engine import template_engine
 from .oauth2_client import oauth2_client, OAuth2Client
 

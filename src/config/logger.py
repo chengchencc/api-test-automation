@@ -3,7 +3,7 @@ import sys
 import json
 from datetime import datetime
 from pathlib import Path
-from .configuration import project_config
+from .settings import project_config
 
 
 class JSONFormatter(logging.Formatter):
