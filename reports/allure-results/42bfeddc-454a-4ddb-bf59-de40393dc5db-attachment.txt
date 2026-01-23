@@ -1,0 +1,3 @@
+INFO     api_test:conftest.py:131 开始测试: test_init_file_not_found
+ERROR    api_test:excel_reader.py:31 Excel文件不存在: C:\Users\cheng\AppData\Local\Temp\tmpxa4irf1c\nonexistent.xlsx
+INFO     api_test:conftest.py:141 结束测试: test_init_file_not_found, 耗时: 0.02秒

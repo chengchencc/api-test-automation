@@ -435,7 +435,7 @@ if __name__ == "__main__":
 ```python
 import pytest
 import allure
-from src.test_cases.test_api import TestAPI
+from test_cases.test_api import TestAPI
 
 
 @allure.epic("接口自动化测试")

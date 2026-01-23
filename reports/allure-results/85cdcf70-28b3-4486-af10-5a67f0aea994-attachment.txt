@@ -1,0 +1,4 @@
+INFO     api_test:conftest.py:131 开始测试: test_get_test_cases_full_flow
+INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpcdfs1_h8\test.xlsx
+INFO     api_test:excel_reader.py:151 从工作表 test_sheet 加载了 1 个测试用例
+INFO     api_test:conftest.py:141 结束测试: test_get_test_cases_full_flow, 耗时: 0.02秒

@@ -1,0 +1,4 @@
+2026-01-16 19:39:46 - INFO - 开始测试: test_get_test_cases_full_flow
+2026-01-16 19:39:46 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpcdfs1_h8\test.xlsx
+2026-01-16 19:39:46 - INFO - 从工作表 test_sheet 加载了 1 个测试用例
+2026-01-16 19:39:46 - INFO - 结束测试: test_get_test_cases_full_flow, 耗时: 0.02秒

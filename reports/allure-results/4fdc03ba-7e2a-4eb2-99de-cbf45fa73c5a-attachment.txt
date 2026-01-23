@@ -1,0 +1,4 @@
+2026-01-16 19:39:55 - INFO - 开始测试: test_get_config
+2026-01-16 19:39:55 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpd6iviigs\test.xlsx
+2026-01-16 19:39:55 - INFO - 从 config 工作表加载了 3 个配置项
+2026-01-16 19:39:55 - INFO - 结束测试: test_get_config, 耗时: 0.03秒

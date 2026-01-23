@@ -1,0 +1,7 @@
+2026-01-16 19:39:49 - INFO - 开始测试: test_validate_case_data
+2026-01-16 19:39:49 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp16q4drzv\test.xlsx
+2026-01-16 19:39:49 - ERROR - 用例缺少名称: 未知
+2026-01-16 19:39:49 - ERROR - 用例缺少请求方法: test
+2026-01-16 19:39:49 - ERROR - 用例缺少URL: test
+2026-01-16 19:39:49 - ERROR - 无效的请求方法: INVALID
+2026-01-16 19:39:49 - INFO - 结束测试: test_validate_case_data, 耗时: 0.02秒

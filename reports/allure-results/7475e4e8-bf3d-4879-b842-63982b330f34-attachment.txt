@@ -1,0 +1,4 @@
+INFO     api_test:conftest.py:131 开始测试: test_get_config
+INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpd6iviigs\test.xlsx
+INFO     api_test:excel_reader.py:290 从 config 工作表加载了 3 个配置项
+INFO     api_test:conftest.py:141 结束测试: test_get_config, 耗时: 0.03秒

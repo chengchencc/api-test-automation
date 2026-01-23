@@ -1,0 +1,3 @@
+INFO     api_test:conftest.py:131 开始测试: test_render_case_data_json_yaml_parsing
+INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpzcyxw24o\test.xlsx
+INFO     api_test:conftest.py:141 结束测试: test_render_case_data_json_yaml_parsing, 耗时: 1.19秒

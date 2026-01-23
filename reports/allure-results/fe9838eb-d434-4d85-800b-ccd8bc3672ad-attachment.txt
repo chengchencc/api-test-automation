@@ -1,5 +1,0 @@
-src\test_cases\test_data_driven.py:33: in test_data_driven
-    assert_utils.assert_status_code(response.status_code, expected_status)
-src\common\assert_utils.py:26: in assert_status_code
-    raise AssertionError(error_msg)
-E   AssertionError: 状态码不匹配: 实际=401, 预期=200

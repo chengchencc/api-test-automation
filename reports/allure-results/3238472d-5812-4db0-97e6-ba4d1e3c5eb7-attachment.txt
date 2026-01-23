@@ -1,0 +1,6 @@
+INFO     api_test:conftest.py:131 开始测试: test_get_test_cases_missing_columns
+INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpd4jg9cpn\test.xlsx
+WARNING  api_test:excel_reader.py:119 工作表[incomplete_sheet]缺少列: ['method', 'url']
+ERROR    api_test:excel_reader.py:145 处理第1行数据失败: argument of type 'Mock' is not iterable
+INFO     api_test:excel_reader.py:151 从工作表 incomplete_sheet 加载了 0 个测试用例
+INFO     api_test:conftest.py:141 结束测试: test_get_test_cases_missing_columns, 耗时: 4.27秒

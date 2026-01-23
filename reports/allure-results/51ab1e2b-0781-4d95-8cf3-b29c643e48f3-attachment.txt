@@ -1,0 +1,7 @@
+INFO     api_test:conftest.py:131 开始测试: test_validate_case_data
+INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp16q4drzv\test.xlsx
+ERROR    api_test:excel_reader.py:224 用例缺少名称: 未知
+ERROR    api_test:excel_reader.py:229 用例缺少请求方法: test
+ERROR    api_test:excel_reader.py:233 用例缺少URL: test
+ERROR    api_test:excel_reader.py:242 无效的请求方法: INVALID
+INFO     api_test:conftest.py:141 结束测试: test_validate_case_data, 耗时: 0.02秒

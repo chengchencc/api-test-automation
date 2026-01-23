@@ -1,0 +1,4 @@
+2026-01-16 19:39:42 - INFO - 开始测试: test_get_test_cases_empty_sheet
+2026-01-16 19:39:42 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpchatph4m\test.xlsx
+2026-01-16 19:39:42 - WARNING - 工作表 empty_sheet 为空
+2026-01-16 19:39:42 - INFO - 结束测试: test_get_test_cases_empty_sheet, 耗时: 0.02秒

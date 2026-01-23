@@ -1,0 +1,4 @@
+2026-01-16 19:39:49 - INFO - 开始测试: test_get_test_suites
+2026-01-16 19:39:49 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp45se_c82\test.xlsx
+2026-01-16 19:39:55 - INFO - 获取了 0 个测试套件
+2026-01-16 19:39:55 - INFO - 结束测试: test_get_test_suites, 耗时: 6.36秒

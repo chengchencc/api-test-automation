@@ -1,0 +1,3 @@
+2026-01-16 19:39:46 - INFO - 开始测试: test_render_case_data
+2026-01-16 19:39:46 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp9p2hc9p_\test.xlsx
+2026-01-16 19:39:47 - INFO - 结束测试: test_render_case_data, 耗时: 1.51秒
