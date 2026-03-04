@@ -97,7 +97,11 @@ class TestRunner:
 
         # 添加额外的命令行参数
         for key, value in kwargs.items():
-            if value is True:
+            if key == 'fn' and value:
+                # 设置环境变量传递Excel文件名
+                import os
+                os.environ['API_TEST_EXCEL_FILE'] = value
+            elif value is True:
                 cmd.append(f"--{key.replace('_', '-')}")
             elif value is not False and value is not None:
                 cmd.append(f"--{key.replace('_', '-')}={value}")
@@ -473,6 +477,8 @@ def main():
     parser.add_argument("--verbose", "-v",
                         action="store_true",
                         help="详细输出")
+    parser.add_argument("--fn", "-f",
+                        help="指定Excel文件名（仅适用于API测试）")
 
     args = parser.parse_args()
 
@@ -513,7 +519,8 @@ def main():
         parallel=args.parallel,
         reruns=args.reruns,
         workers=args.workers,
-        html_report=args.html
+        html_report=args.html,
+        fn=args.fn
     )
 
     # 生成报告

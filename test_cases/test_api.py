@@ -12,10 +12,27 @@ from src.common.template_engine_manager import template_engine
 from src.config.logger import logger, TestLogger
 from src.config.settings import project_config
 
+
 def get_all_excel_files():
     """获取test_data目录下所有Excel文件"""
+    import os
     test_data_dir = project_config.TEST_DATA_DIR
     excel_files = list(test_data_dir.glob("*.xlsx")) + list(test_data_dir.glob("*.xls"))
+    
+    # 读取环境变量 API_TEST_EXCEL_FILE
+    fn = os.environ.get('API_TEST_EXCEL_FILE')
+    if fn:
+        # 过滤指定的Excel文件
+        filtered_files = []
+        for file in excel_files:
+            if file.name == fn:
+                filtered_files.append(file)
+        if filtered_files:
+            return filtered_files
+        else:
+            # 如果没有找到指定文件，返回空列表
+            return []
+    
     return sorted(excel_files)  # 按文件名排序
 
 class BaseTest:
