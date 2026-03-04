@@ -304,7 +304,7 @@ class AssertUtils:
         # 断言状态码
         if expected_status is not None:
             AssertUtils.assert_status_code(response.status_code, expected_status,
-                                           f"{message} - 状态码断言失败")
+                                           f"{message} - 状态码断言失败 {type(response.status_code)} === {type(expected_status)}")
             assertions.append(f"status_code={expected_status}")
 
         # 断言响应时间

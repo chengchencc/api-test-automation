@@ -1,3 +1,0 @@
-test_cases\test_excel_reader.py:384: in test_get_test_suites
-    assert 'test_suite1' in suites
-E   AssertionError: assert 'test_suite1' in {}

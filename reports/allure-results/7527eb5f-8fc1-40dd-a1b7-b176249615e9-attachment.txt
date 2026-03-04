@@ -1,4 +1,0 @@
-2026-01-16 19:39:42 - INFO - 开始测试: test_get_sheet_names
-2026-01-16 19:39:42 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpl4lsen6u\test.xlsx
-2026-01-16 19:39:42 - INFO - 获取工作表名称: ['Sheet1', 'Sheet2', 'Sheet3']
-2026-01-16 19:39:42 - INFO - 结束测试: test_get_sheet_names, 耗时: 0.02秒

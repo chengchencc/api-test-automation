@@ -1,4 +1,0 @@
-INFO     api_test:conftest.py:131 开始测试: test_get_test_suites
-INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp45se_c82\test.xlsx
-INFO     api_test:excel_reader.py:261 获取了 0 个测试套件
-INFO     api_test:conftest.py:141 结束测试: test_get_test_suites, 耗时: 6.36秒

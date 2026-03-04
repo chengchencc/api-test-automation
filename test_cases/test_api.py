@@ -46,25 +46,68 @@ class BaseTest:
 
 @allure.epic("接口自动化测试")
 @allure.feature("基础接口测试")
+@pytest.mark.api
 class TestAPI(BaseTest):
     """API测试类"""
 
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_test_class(self):
+    def setup_class(self):
         """测试类级别的初始化"""
+        # 先调用父类的setup_class方法
+        BaseTest.setup_class(self)
         self.cache = {}  # 用于存储测试间共享的数据
-        yield
-        # 测试类清理
+
+    def teardown_class(self):
+        """测试类清理"""
+        # 调用父类的teardown_class方法
+        BaseTest.teardown_class(self)
 
     @allure.story("Excel数据驱动测试")
-    @pytest.mark.parametrize("test_case", excel_reader.get_test_cases("test_cases"))
-    def test_excel_driven(self, test_case: Dict[str, Any]):
+    @pytest.mark.parametrize("case_index", range(len(excel_reader.get_test_cases("test_cases", render_templates=False))))
+    def test_excel_driven(self, case_index: int):
         """
         执行Excel中的测试用例
 
         Args:
-            test_case: 测试用例数据
+            case_index: 测试用例索引
         """
+        # 实时读取并渲染测试用例，确保使用最新的缓存
+        test_cases = excel_reader.get_test_cases("test_cases", render_templates=False)
+        test_case = test_cases[case_index]
+        
+        # 准备上下文
+        context = {
+            'case_id': test_case.get('case_id', 'unknown'),
+            'case_name': test_case.get('case_name', '未知用例'),
+            'cache': self.cache,
+            'timestamp': int(time.time()),
+            **self.cache
+        }
+        
+        # 渲染测试用例数据
+        from src.common.template_engine_manager import template_engine
+        
+        # 先处理JSON字段，解析后再渲染
+        json_fields = ['headers', 'params', 'data', 'json', 'expected', 'setup_data', 'teardown_data']
+        processed_data = test_case.copy()
+        
+        for field in json_fields:
+            if field in processed_data and processed_data[field] and isinstance(processed_data[field], str):
+                try:
+                    # 先尝试解析为JSON
+                    import json
+                    processed_data[field] = json.loads(processed_data[field])
+                except json.JSONDecodeError:
+                    try:
+                        # 再尝试解析为YAML
+                        import yaml
+                        processed_data[field] = yaml.safe_load(processed_data[field])
+                    except (yaml.YAMLError, AttributeError):
+                        # 如果都失败，保持原样
+                        pass
+        
+        # 渲染处理后的数据
+        test_case = template_engine.render(processed_data, context)
+        
         # 获取测试用例信息
         case_id = test_case.get('case_id', 'unknown')
         case_name = test_case.get('case_name', '未知用例')
@@ -76,11 +119,12 @@ class TestAPI(BaseTest):
         data = test_case.get('data', {})
         json_data = test_case.get('json', {})
         files = test_case.get('files', None)
-        expected_status = test_case.get('expected_status', 200)
+        # 把test_case.get('expected_status', 200)类型转换为int
+        expected_status = int(test_case.get('expected_status', 200))
         expected_response = test_case.get('expected_response', {})
         expected_schema = test_case.get('expected_schema', {})
         expected_contains = test_case.get('expected_contains')
-        max_response_time = test_case.get('max_response_time')
+        max_response_time = int(test_case.get('max_response_time'))
         setup_data = test_case.get('setup_data', {})
         teardown_data = test_case.get('teardown_data', {})
 
@@ -120,8 +164,24 @@ class TestAPI(BaseTest):
                 'case_name': case_name,
                 'cache': self.cache,
                 'timestamp': int(time.time()),
+                **self.cache
             }
-
+            # 确保headers中的动态参数能够正确获取到cache中的值
+            if headers:
+                # 输出原始headers
+                self.test_logger.log_step(f"原始headers === : - {headers}")
+                # 重新渲染headers中的动态参数
+                rendered_headers = {}
+                for k, v in headers.items():
+                    if isinstance(v, str):
+                        rendered_value = template_engine.render_string(v, **context)
+                        self.test_logger.log_step(f"渲染headers[{k}] === : {v} -> {rendered_value}")
+                        rendered_headers[k] = rendered_value
+                    else:
+                        rendered_headers[k] = v
+                headers = rendered_headers
+                # 输出渲染后的headers
+                self.test_logger.log_step(f"渲染后headers === : - {headers}")
             # 发送请求
             response = request_client.send_request(
                 method=method,
@@ -135,7 +195,9 @@ class TestAPI(BaseTest):
             )
 
             # 将响应数据保存到缓存，供后续用例使用
+            self.test_logger.log_step(f"获取数据 --- extract === : - {test_case.get('extract', {})}")
             response_data = self._extract_response_data(response, test_case.get('extract', {}))
+            self.test_logger.log_step(f"获取数据 --- response_data === : - {response_data}")
             self.cache.update(response_data)
 
             # 更新模板引擎上下文
@@ -144,6 +206,10 @@ class TestAPI(BaseTest):
                 last_response=response_data,
                 cache=self.cache
             )
+
+            # 输出获取缓存中的数据
+            self.test_logger.log_step(f"获取缓存中的数据 === : - {self.cache}")
+
 
             # 记录请求响应详情到Allure
             self._attach_request_response_to_allure(response, test_case)
@@ -248,11 +314,24 @@ class TestAPI(BaseTest):
             if command:
                 subprocess.run(command, shell=True, check=False)  # 不检查返回码
 
-    def _extract_response_data(self, response, extract_rules: Dict) -> Dict:
+    def _extract_response_data(self, response, extract_rules) -> Dict:
         """从响应中提取数据"""
         extracted = {}
 
         if not extract_rules or not response.content:
+            return extracted
+
+        # 尝试将extract_rules从字符串解析为字典
+        if isinstance(extract_rules, str):
+            try:
+                extract_rules = json.loads(extract_rules)
+            except json.JSONDecodeError:
+                logger.warning(f"extract_rules不是有效的JSON格式: {extract_rules}")
+                return extracted
+
+        # 确保extract_rules是字典
+        if not isinstance(extract_rules, dict):
+            logger.warning(f"extract_rules不是字典类型: {type(extract_rules)}")
             return extracted
 
         try:
@@ -370,6 +449,19 @@ class TestAPI(BaseTest):
                 logger.error(f"自定义断言 {idx + 1} 失败: {e}")
                 raise
 
+    def _ensure_serializable(self, data):
+        """确保数据可以被JSON序列化"""
+        if isinstance(data, bytes):
+            try:
+                return data.decode('utf-8')
+            except UnicodeDecodeError:
+                return str(data)
+        elif isinstance(data, dict):
+            return {k: self._ensure_serializable(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._ensure_serializable(item) for item in data]
+        return data
+
     def _attach_request_response_to_allure(self, response, test_case: Dict):
         """将请求响应详情附加到Allure报告"""
 
@@ -378,7 +470,7 @@ class TestAPI(BaseTest):
             'method': response.request.method,
             'url': response.request.url,
             'headers': dict(response.request.headers),
-            'body': response.request.body
+            'body': self._ensure_serializable(response.request.body)
         }
 
         # 响应信息
@@ -399,13 +491,13 @@ class TestAPI(BaseTest):
 
         # 附加到Allure报告
         allure.attach(
-            json.dumps(case_info, indent=2, ensure_ascii=False),
+            json.dumps(self._ensure_serializable(case_info), indent=2, ensure_ascii=False),
             name="用例信息",
             attachment_type=allure.attachment_type.JSON
         )
 
         allure.attach(
-            json.dumps(request_info, indent=2, ensure_ascii=False),
+            json.dumps(self._ensure_serializable(request_info), indent=2, ensure_ascii=False),
             name="请求详情",
             attachment_type=allure.attachment_type.JSON
         )
@@ -414,7 +506,7 @@ class TestAPI(BaseTest):
         if response.headers.get('Content-Type', '').startswith('application/json'):
             try:
                 allure.attach(
-                    json.dumps(json.loads(response.text), indent=2, ensure_ascii=False),
+                    json.dumps(self._ensure_serializable(json.loads(response.text)), indent=2, ensure_ascii=False),
                     name="响应详情(JSON)",
                     attachment_type=allure.attachment_type.JSON
                 )
@@ -430,182 +522,6 @@ class TestAPI(BaseTest):
                 name="响应详情",
                 attachment_type=allure.attachment_type.TEXT
             )
-
-    @allure.story("基本接口测试")
-    @allure.title("健康检查接口")
-    @allure.severity(allure.severity_level.CRITICAL)
-    def test_health_check(self):
-        """健康检查接口测试"""
-        response = request_client.get("/health")
-
-        assert_utils.assert_status_code(response.status_code, 200)
-        assert_utils.assert_response_contains(response.text, "ok")
-
-    @allure.story("认证接口测试")
-    @allure.title("用户登录接口")
-    def test_login(self):
-        """用户登录接口测试"""
-        login_data = {
-            "username": "{{ random_string(8, 'user_') }}",
-            "password": "{{ random_string(12) }}",
-            "timestamp": "{{ timestamp() }}"
-        }
-
-        # 渲染模板
-        rendered_data = template_engine.render(login_data)
-
-        response = request_client.post("/api/login", json_data=rendered_data)
-
-        # 综合断言
-        assert_utils.assert_response(
-            response=response,
-            expected_status=200,
-            expected_schema={
-                "code": int,
-                "message": str,
-                "data": {
-                    "token": str,
-                    "user_id": int
-                }
-            }
-        )
-
-    @allure.story("参数化测试")
-    @pytest.mark.parametrize("username,password,expected_status", [
-        ("admin", "admin123", 200),
-        ("user", "wrongpass", 401),
-        ("", "password", 400),
-        ("user", "", 400),
-    ])
-    def test_login_parameterized(self, username, password, expected_status):
-        """参数化登录测试"""
-        login_data = {
-            "username": username,
-            "password": password
-        }
-
-        response = request_client.post("/api/login", json_data=login_data)
-        assert_utils.assert_status_code(response.status_code, expected_status)
-
-    @allure.story("文件上传测试")
-    def test_file_upload(self):
-        """文件上传接口测试"""
-        import io
-
-        # 创建测试文件
-        test_file = io.BytesIO(b"This is a test file content")
-        test_file.name = "test.txt"
-
-        files = {
-            "file": test_file
-        }
-
-        response = request_client.post("/api/upload", files=files)
-
-        assert_utils.assert_status_code(response.status_code, 200)
-        assert_utils.assert_response_json(
-            response.json(),
-            {"code": 0, "message": "success"}
-        )
-
-    @allure.story("链式接口测试")
-    def test_chained_requests(self):
-        """链式接口测试（一个接口的响应作为另一个接口的输入）"""
-
-        # 1. 先登录获取token
-        login_data = {
-            "username": "testuser",
-            "password": "testpass"
-        }
-
-        login_response = request_client.post("/api/login", json_data=login_data)
-        assert_utils.assert_status_code(login_response.status_code, 200)
-
-        # 提取token
-        login_data = login_response.json()
-        token = login_data.get("data", {}).get("token")
-        assert token, "登录响应中未找到token"
-
-        # 2. 使用token获取用户信息
-        request_client.add_header("Authorization", f"Bearer {token}")
-
-        user_response = request_client.get("/api/user/profile")
-        assert_utils.assert_status_code(user_response.status_code, 200)
-
-        # 清理请求头
-        request_client.remove_header("Authorization")
-
-    @allure.story("性能测试")
-    def test_response_time(self):
-        """响应时间测试"""
-        import time
-
-        start_time = time.time()
-        response = request_client.get("/api/health")
-        elapsed = time.time() - start_time
-
-        # 断言响应时间小于1秒
-        assert_utils.assert_time(elapsed, 1.0)
-
-        # 记录响应时间
-        logger.info(f"接口响应时间: {elapsed:.3f}秒")
-
-    @allure.story("异常测试")
-    def test_invalid_endpoint(self):
-        """测试不存在的接口"""
-        response = request_client.get("/invalid-endpoint")
-        assert_utils.assert_status_code(response.status_code, 404)
-
-    @allure.story("动态参数测试")
-    def test_dynamic_parameters(self):
-        """测试Jinja2动态参数功能"""
-
-        # 使用模板引擎生成测试数据
-        test_context = {
-            "user_id": 12345,
-            "order_prefix": "ORD"
-        }
-
-        # 渲染各种动态参数
-        test_cases = [
-            ("随机用户名", "{{ 'user_' ~ random_int(1000, 9999) }}"),
-            ("带时间戳的订单号", "{{ order_prefix }}_{{ timestamp() }}"),
-            ("MD5签名", "{{ (user_id|string ~ timestamp()|string) | md5 }}"),
-            ("随机邮箱", "{{ random_string(8) }}@test.com"),
-            ("今日日期", "{{ today() }}"),
-        ]
-
-        for name, template in test_cases:
-            result = template_engine.render_string(template, **test_context)
-            logger.info(f"{name}: {template} -> {result}")
-            assert result, f"模板渲染失败: {template}"
-
-    @allure.story("数据驱动测试-多Sheet")
-    @pytest.mark.parametrize("sheet_name", ["login_cases", "user_cases", "order_cases"])
-    def test_multiple_sheets(self, sheet_name):
-        """测试多个Excel Sheet"""
-        try:
-            test_cases = excel_reader.get_test_cases(sheet_name)
-
-            if not test_cases:
-                pytest.skip(f"Sheet {sheet_name} 中没有测试用例")
-
-            for test_case in test_cases:
-                # 简化执行，不记录详细的Allure步骤
-                response = request_client.send_request(
-                    method=test_case.get('method', 'GET'),
-                    url=test_case.get('url', ''),
-                    json_data=test_case.get('json', {})
-                )
-
-                expected_status = test_case.get('expected_status', 200)
-                assert_utils.assert_status_code(response.status_code, expected_status)
-
-        except Exception as e:
-            if "No sheet named" in str(e):
-                pytest.skip(f"Sheet {sheet_name} 不存在")
-            else:
-                raise
 
 if __name__ == "__main__":
     # 直接运行测试

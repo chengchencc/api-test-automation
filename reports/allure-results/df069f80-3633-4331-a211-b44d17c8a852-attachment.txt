@@ -1,4 +1,0 @@
-2026-01-16 19:39:41 - INFO - 开始测试: test_read_sheet_cleans_columns_and_nan
-2026-01-16 19:39:41 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp_hbyr7xy\test.xlsx
-2026-01-16 19:39:41 - INFO - 成功读取Excel工作表: test, 行数: 2
-2026-01-16 19:39:41 - INFO - 结束测试: test_read_sheet_cleans_columns_and_nan, 耗时: 0.03秒

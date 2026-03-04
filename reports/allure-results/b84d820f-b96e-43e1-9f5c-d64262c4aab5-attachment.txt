@@ -1,7 +1,0 @@
-INFO     api_test:conftest.py:131 开始测试: test_clear_cache
-INFO     api_test:excel_reader.py:34 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmpb0j_vb25\test.xlsx
-INFO     api_test:excel_reader.py:302 已清空Excel读取器缓存
-INFO     api_test:conftest.py:141 结束测试: test_clear_cache, 耗时: 0.02秒
-INFO     api_test:conftest.py:122 ============================================================
-INFO     api_test:conftest.py:123 测试会话结束
-INFO     api_test:conftest.py:124 ============================================================

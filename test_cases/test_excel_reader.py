@@ -394,14 +394,14 @@ class TestExcelReader:
         """测试获取配置信息"""
         mock_df = pd.DataFrame({
             'key': ['base_url', 'timeout', 'retry_count'],
-            'value': ['http://api.example.com', '30', '{"max": 3}']
+            'value': ['https://www.metersphere.com', '30', '{"max": 3}']
         })
         mock_read_sheet.return_value = mock_df
 
         # 模拟模板引擎渲染
         with patch('src.common.excel_reader.template_engine') as mock_engine:
             mock_engine.render.return_value = {
-                'base_url': 'http://api.example.com',
+                'base_url': 'https://www.metersphere.com',
                 'timeout': '30',
                 'retry_count': {'max': 3}
             }
@@ -414,7 +414,7 @@ class TestExcelReader:
             # 验证模板引擎调用
             mock_engine.render.assert_called_once()
             # 验证配置内容
-            assert config['base_url'] == 'http://api.example.com'
+            assert config['base_url'] == 'https://www.metersphere.com'
             assert config['timeout'] == '30'
             assert config['retry_count'] == {'max': 3}
 

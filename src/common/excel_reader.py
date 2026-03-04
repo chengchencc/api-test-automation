@@ -195,24 +195,25 @@ class ExcelReader:
         # 更新模板引擎上下文
         template_engine.update_context(**render_context)
 
-        # 渲染整个用例数据
-        rendered_data = template_engine.render(case_data, render_context)
-
-        # 特殊处理JSON字段
+        # 先处理JSON字段，解析后再渲染
         json_fields = ['headers', 'params', 'data', 'json', 'expected', 'setup_data', 'teardown_data']
+        processed_data = case_data.copy()
 
         for field in json_fields:
-            if field in rendered_data and rendered_data[field] and isinstance(rendered_data[field], str):
+            if field in processed_data and processed_data[field] and isinstance(processed_data[field], str):
                 try:
                     # 先尝试解析为JSON
-                    rendered_data[field] = json.loads(rendered_data[field])
+                    processed_data[field] = json.loads(processed_data[field])
                 except json.JSONDecodeError:
                     try:
                         # 再尝试解析为YAML
-                        rendered_data[field] = yaml.safe_load(rendered_data[field])
+                        processed_data[field] = yaml.safe_load(processed_data[field])
                     except (yaml.YAMLError, AttributeError):
                         # 如果都失败，保持原样
                         pass
+
+        # 渲染处理后的数据
+        rendered_data = template_engine.render(processed_data, render_context)
 
         return rendered_data
 

@@ -22,7 +22,7 @@ class Config:
     EXCEL_FILE = TEST_DATA_DIR / "api_test_cases.xlsx"
     
     # 基本配置
-    BASE_URL = os.getenv("API_BASE_URL", "http://api.example.com")
+    BASE_URL = os.getenv("API_BASE_URL", "https://www.metersphere.com")
     TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "30"))
     VERIFY_SSL = os.getenv("VERIFY_SSL", "False").lower() == "true"
     MAX_RETRY = int(os.getenv("MAX_RETRY", "3"))

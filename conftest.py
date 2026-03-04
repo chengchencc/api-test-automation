@@ -153,23 +153,30 @@ def test_data():
 
 
 @pytest.fixture
+def test_cache():
+    """测试缓存 fixture"""
+    return {}
+
+@pytest.fixture
 def auth_token():
     """认证token fixture"""
     # 这里可以获取认证token
-    token = os.environ.get("TEST_AUTH_TOKEN", "")
-    if not token:
-        # 如果没有配置token，尝试登录获取
-        try:
-            from src.common.request_client import request_client
-            login_data = {
-                "username": os.environ.get("TEST_USERNAME", "admin"),
-                "password": os.environ.get("TEST_PASSWORD", "admin123")
-            }
-            response = request_client.post("/api/login", json_data=login_data)
-            if response.status_code == 200:
-                token = response.json().get("data", {}).get("token", "")
-        except:
-            pass
+    # 从cache中获取参数token
+    token = test_cache.get("token", "")
+    # token = os.environ.get("token", "")
+    # if not token:
+    #     # 如果没有配置token，尝试登录获取
+    #     try:
+    #         from src.common.request_client import request_client
+    #         login_data = {
+    #             "username": os.environ.get("TEST_USERNAME", "admin"),
+    #             "password": os.environ.get("TEST_PASSWORD", "admin123")
+    #         }
+    #         response = request_client.post("/api/login", json_data=login_data)
+    #         if response.status_code == 200:
+    #             token = response.json().get("data", {}).get("token", "")
+    #     except:
+    #         pass
 
     return token
 
@@ -181,9 +188,9 @@ def api_client(auth_token):
 
     client = RequestClient()
 
-    # 添加认证头
-    if auth_token:
-        client.add_header("Authorization", f"Bearer {auth_token}")
+    # 添加认证头 每个接口自己配置
+    # if auth_token:
+    #     client.add_header("Authorization", f"Bearer {auth_token}")
 
     yield client
 

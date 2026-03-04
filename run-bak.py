@@ -47,8 +47,6 @@ class TestRunner:
 
         # 基本pytest命令
         cmd:list[str] = [
-            "python3",
-            "-m",
             "pytest",
             f"--alluredir={project_config.ALLURE_RESULTS}",
             "--clean-alluredir",
@@ -312,12 +310,12 @@ class TestRunner:
         test_cases_data = [
             {
                 "case_id": "TC001",
-                "case_name": "登录功能-t1",
-                "description": "测试获取短信支持地区接口",
+                "case_name": "示例用例-健康检查",
+                "description": "测试健康检查接口",
                 "tags": "smoke,api",
                 "severity": "critical",
                 "method": "GET",
-                "url": "/prod-api/sms/country/supports",
+                "url": "/health",
                 "headers": '{"Content-Type": "application/json"}',
                 "params": "{}",
                 "data": "",
@@ -331,12 +329,34 @@ class TestRunner:
                 "teardown_data": "",
                 "extract": '{"token": "data.token"}',
                 "assertions": '[{"type": "status_code", "expected": 200}]'
+            },
+            {
+                "case_id": "TC002",
+                "case_name": "示例用例-用户登录",
+                "description": "测试用户登录接口，使用动态参数",
+                "tags": "regression,api",
+                "severity": "critical",
+                "method": "POST",
+                "url": "/api/login",
+                "headers": '{"Content-Type": "application/json"}',
+                "params": "",
+                "data": "",
+                "json": '{"username": "{{ random_string(8, \\"user_\\") }}", "password": "{{ random_string(12) }}", "timestamp": "{{ timestamp() }}"}',
+                "expected_status": 200,
+                "expected_response": '{"code": 0, "message": "success"}',
+                "expected_schema": '{"code": "int", "message": "str", "data": {"token": "str", "user_id": "int"}}',
+                "expected_contains": "",
+                "max_response_time": 2.0,
+                "setup_data": "",
+                "teardown_data": "",
+                "extract": '{"auth_token": "data.token", "user_id": "data.user_id"}',
+                "assertions": '[{"type": "json_path", "jsonpath": "$.code", "expected": 0}]'
             }
         ]
 
         # 定义配置模板
         config_data = [
-            {"key": "base_url", "value": "https://www.metersphere.com"},
+            {"key": "base_url", "value": "http://api.example.com"},
             {"key": "timeout", "value": "30"},
             {"key": "admin_user", "value": "admin"},
             {"key": "admin_password", "value": "admin123"},

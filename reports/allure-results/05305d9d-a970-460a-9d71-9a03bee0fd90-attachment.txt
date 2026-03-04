@@ -1,4 +1,0 @@
-2026-01-16 19:39:41 - INFO - 开始测试: test_read_sheet_without_name
-2026-01-16 19:39:41 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmp2hlt_h78\test.xlsx
-2026-01-16 19:39:41 - INFO - 成功读取Excel工作表: 第一个工作表, 行数: 1
-2026-01-16 19:39:41 - INFO - 结束测试: test_read_sheet_without_name, 耗时: 0.02秒

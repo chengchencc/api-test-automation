@@ -1,3 +1,0 @@
-2026-01-16 19:39:41 - INFO - 开始测试: test_init_with_default_file
-2026-01-16 19:39:41 - INFO - 初始化Excel读取器，文件: C:\Users\cheng\AppData\Local\Temp\tmplwg7p3rc\test.xlsx
-2026-01-16 19:39:41 - INFO - 结束测试: test_init_with_default_file, 耗时: 0.02秒
