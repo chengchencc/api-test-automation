@@ -87,7 +87,7 @@ class TestAPI(BaseTest):
         from src.common.template_engine_manager import template_engine
         
         # 先处理JSON字段，解析后再渲染
-        json_fields = ['headers', 'params', 'data', 'json', 'expected', 'setup_data', 'teardown_data']
+        json_fields = ['headers', 'params', 'data', 'json', 'expected', 'setup_data', 'teardown_data', 'assertions']
         processed_data = test_case.copy()
         
         for field in json_fields:
@@ -228,6 +228,7 @@ class TestAPI(BaseTest):
             # 自定义断言
             custom_assertions = test_case.get('assertions', [])
             if custom_assertions and isinstance(custom_assertions, list):
+                self.test_logger.log_step(f"自定义断言开始执行：")
                 self._execute_custom_assertions(response, custom_assertions)
 
             self.test_logger.log_step(f"测试用例 {case_id} 执行成功")
@@ -437,16 +438,16 @@ class TestAPI(BaseTest):
                             elif assertion.get('match_type') == 'contains':
                                 assert expected in str(matches[0]), f"JSON路径值不包含: {expected}"
                     except ImportError:
-                        logger.warning("jsonpath-ng未安装，跳过JSON路径断言")
+                        self.test_logger.log_step("jsonpath-ng未安装，跳过JSON路径断言")
 
                 elif assertion_type == 'schema':
                     response_json = response.json() if response.content else {}
                     assert_utils.assert_response_schema(response_json, expected, message)
 
-                logger.debug(f"自定义断言 {idx + 1} 成功: {assertion_type}")
+                self.test_logger.log_step(f"自定义断言结果： {idx + 1} 成功: {assertion_type}")
 
             except Exception as e:
-                logger.error(f"自定义断言 {idx + 1} 失败: {e}")
+                self.test_logger.log_step(f"自定义断言结果： {idx + 1} 失败: {e}")
                 raise
 
     def _ensure_serializable(self, data):
