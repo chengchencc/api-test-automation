@@ -62,16 +62,17 @@ class TestAPI(BaseTest):
         BaseTest.teardown_class(self)
 
     @allure.story("Excel数据驱动测试")
-    @pytest.mark.parametrize("case_index", range(len(excel_reader.get_test_cases("test_cases", render_templates=False))))
-    def test_excel_driven(self, case_index: int):
+    @pytest.mark.parametrize("sheet_name, case_index", [(sheet, idx) for sheet, cases in excel_reader.get_test_suites().items() for idx in range(len(cases))])
+    def test_excel_driven(self, sheet_name: str, case_index: int):
         """
         执行Excel中的测试用例
 
         Args:
+            sheet_name: 工作表名称
             case_index: 测试用例索引
         """
         # 实时读取并渲染测试用例，确保使用最新的缓存
-        test_cases = excel_reader.get_test_cases("test_cases", render_templates=False)
+        test_cases = excel_reader.get_test_cases(sheet_name, render_templates=False)
         test_case = test_cases[case_index]
         
         # 准备上下文
@@ -195,9 +196,9 @@ class TestAPI(BaseTest):
             )
 
             # 将响应数据保存到缓存，供后续用例使用
-            self.test_logger.log_step(f"获取数据 --- extract === : - {test_case.get('extract', {})}")
+            # self.test_logger.log_step(f"获取数据 --- extract === : - {test_case.get('extract', {})}")
             response_data = self._extract_response_data(response, test_case.get('extract', {}))
-            self.test_logger.log_step(f"获取数据 --- response_data === : - {response_data}")
+            # self.test_logger.log_step(f"获取数据 --- response_data === : - {response_data}")
             self.cache.update(response_data)
 
             # 更新模板引擎上下文

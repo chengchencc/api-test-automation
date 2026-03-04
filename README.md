@@ -154,6 +154,9 @@ python run.py --template
 # 运行所有测试
 python run.py
 
+# ngm 常用测试
+python3 run.py --type api
+
 # 运行冒烟测试
 python run.py --type smoke
 
