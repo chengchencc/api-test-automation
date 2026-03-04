@@ -2,12 +2,21 @@ import pytest
 import allure
 import json
 import time
+import glob
+from pathlib import Path
 from typing import Dict, Any, List
-from src.common.excel_reader import excel_reader
+from src.common.excel_reader import excel_reader, ExcelReader
 from src.common.request_client import request_client
 from src.common.assert_utils import assert_utils
 from src.common.template_engine_manager import template_engine
 from src.config.logger import logger, TestLogger
+from src.config.settings import project_config
+
+def get_all_excel_files():
+    """获取test_data目录下所有Excel文件"""
+    test_data_dir = project_config.TEST_DATA_DIR
+    excel_files = list(test_data_dir.glob("*.xlsx")) + list(test_data_dir.glob("*.xls"))
+    return sorted(excel_files)  # 按文件名排序
 
 class BaseTest:
     """测试基类"""
@@ -62,17 +71,25 @@ class TestAPI(BaseTest):
         BaseTest.teardown_class(self)
 
     @allure.story("Excel数据驱动测试")
-    @pytest.mark.parametrize("sheet_name, case_index", [(sheet, idx) for sheet, cases in excel_reader.get_test_suites().items() for idx in range(len(cases))])
-    def test_excel_driven(self, sheet_name: str, case_index: int):
+    @pytest.mark.parametrize(
+        "excel_file, sheet_name, case_index",
+        [(str(excel_file), sheet, idx) 
+         for excel_file in get_all_excel_files() 
+         for sheet, cases in ExcelReader(excel_file).get_test_suites().items() 
+         for idx in range(len(cases))]
+    )
+    def test_excel_driven(self, excel_file: str, sheet_name: str, case_index: int):
         """
         执行Excel中的测试用例
 
         Args:
+            excel_file: Excel文件路径
             sheet_name: 工作表名称
             case_index: 测试用例索引
         """
         # 实时读取并渲染测试用例，确保使用最新的缓存
-        test_cases = excel_reader.get_test_cases(sheet_name, render_templates=False)
+        reader = ExcelReader(excel_file)
+        test_cases = reader.get_test_cases(sheet_name, render_templates=False)
         test_case = test_cases[case_index]
         
         # 准备上下文
