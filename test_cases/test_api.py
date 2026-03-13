@@ -17,12 +17,12 @@ def get_all_excel_files():
     """获取test_data目录下所有Excel文件"""
     import os
     test_data_dir = project_config.TEST_DATA_DIR
-    excel_files = list(test_data_dir.glob("*.xlsx")) + list(test_data_dir.glob("*.xls"))
     
     # 读取环境变量 API_TEST_EXCEL_FILE
     fn = os.environ.get('API_TEST_EXCEL_FILE')
     if fn:
         # 过滤指定的Excel文件
+        excel_files = list(test_data_dir.rglob("*.xlsx")) + list(test_data_dir.rglob("*.xls"))
         filtered_files = []
         for file in excel_files:
             if file.name == fn:
@@ -33,6 +33,20 @@ def get_all_excel_files():
             # 如果没有找到指定文件，返回空列表
             return []
     
+    # 读取环境变量 API_TEST_EXCEL_FOLDER
+    fr = os.environ.get('API_TEST_EXCEL_FOLDER')
+    if fr:
+        # 只处理指定文件夹下的Excel文件
+        target_folder = test_data_dir / fr
+        if target_folder.exists() and target_folder.is_dir():
+            excel_files = list(target_folder.glob("*.xlsx")) + list(target_folder.glob("*.xls"))
+            return sorted(excel_files)  # 按文件名排序
+        else:
+            # 如果文件夹不存在，返回空列表
+            return []
+    
+    # 默认处理test_data及其子目录下的所有Excel文件
+    excel_files = list(test_data_dir.rglob("*.xlsx")) + list(test_data_dir.rglob("*.xls"))
     return sorted(excel_files)  # 按文件名排序
 
 class BaseTest:

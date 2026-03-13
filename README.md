@@ -154,8 +154,14 @@ python run.py --template
 # 运行所有测试
 python run.py
 
-# ngm 常用测试
+# ngm 常用测试 执行全部测试文件，慎用！
 python3 run.py --type api
+
+# 指定测试文件执行
+python3 run.py --type api --fn api_test_cases.xlsx 
+
+# 指定文件夹运行
+python3 run.py --type api --fr aa 
 
 # 运行冒烟测试
 python run.py --type smoke

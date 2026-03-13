@@ -43,6 +43,8 @@ class TestRunner:
         Returns:
             退出码
         """
+        # 存储测试文件夹信息
+        self.test_folder = kwargs.get('fr', '')
         self.start_time = time.time()
 
         # 基本pytest命令
@@ -89,7 +91,15 @@ class TestRunner:
 
         # HTML报告
         if html_report:
-            html_report_path = project_config.get_html_report_path()
+            # 生成时间戳（年月日_时分秒格式）
+            timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+            # 创建基于测试文件夹和时间戳的文件名
+            if self.test_folder:
+                filename = f"{self.test_folder}_{timestamp}.html"
+            else:
+                filename = f"{timestamp}.html"
+            # 创建完整路径
+            html_report_path = project_config.REPORT_DIR / filename
             cmd.extend([
                 f"--html={html_report_path}",
                 "--self-contained-html"
@@ -101,6 +111,10 @@ class TestRunner:
                 # 设置环境变量传递Excel文件名
                 import os
                 os.environ['API_TEST_EXCEL_FILE'] = value
+            elif key == 'fr' and value:
+                # 设置环境变量传递测试数据文件夹
+                import os
+                os.environ['API_TEST_EXCEL_FOLDER'] = value
             elif value is True:
                 cmd.append(f"--{key.replace('_', '-')}")
             elif value is not False and value is not None:
@@ -185,17 +199,21 @@ class TestRunner:
 
     def open_html_report(self):
         """打开HTML报告"""
-        html_report_path = project_config.get_html_report_path()
-        if html_report_path.exists():
-            report_url = f"file://{html_report_path.absolute()}"
-            logger.info(f"在浏览器中打开HTML报告: {report_url}")
-
-            try:
-                webbrowser.open(report_url)
-            except Exception as e:
-                logger.error(f"打开浏览器失败: {e}")
-        else:
+        # 查找最新的HTML报告文件
+        html_files = list(project_config.REPORT_DIR.glob("*.html"))
+        if not html_files:
             logger.error("HTML报告不存在，请先运行测试")
+            return
+        
+        # 按修改时间排序，获取最新的报告
+        latest_report = sorted(html_files, key=lambda x: x.stat().st_mtime, reverse=True)[0]
+        report_url = f"file://{latest_report.absolute()}"
+        logger.info(f"在浏览器中打开HTML报告: {report_url}")
+
+        try:
+            webbrowser.open(report_url)
+        except Exception as e:
+            logger.error(f"打开浏览器失败: {e}")
 
     def list_test_cases(self):
         """列出所有测试用例"""
@@ -479,6 +497,8 @@ def main():
                         help="详细输出")
     parser.add_argument("--fn", "-f",
                         help="指定Excel文件名（仅适用于API测试）")
+    parser.add_argument("--fr", "-fr",
+                        help="指定测试数据文件夹（仅适用于API测试）")
 
     args = parser.parse_args()
 
@@ -520,7 +540,8 @@ def main():
         reruns=args.reruns,
         workers=args.workers,
         html_report=args.html,
-        fn=args.fn
+        fn=args.fn,
+        fr=args.fr
     )
 
     # 生成报告
