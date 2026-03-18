@@ -27,11 +27,14 @@ class ExcelReader:
         self._data_cache = {}
         self._sheet_cache = {}
 
-        if not self.excel_file.exists():
-            logger.error(f"Excel文件不存在: {self.excel_file}")
-            raise FileNotFoundError(f"Excel文件不存在: {self.excel_file}")
+        if self.excel_file and not self.excel_file.exists():
+            logger.warning(f"Excel文件不存在: {self.excel_file}")
+            # 不再抛出异常，允许在没有文件时初始化
 
-        logger.info(f"初始化Excel读取器，文件: {self.excel_file}")
+        if self.excel_file:
+            logger.info(f"初始化Excel读取器，文件: {self.excel_file}")
+        else:
+            logger.info("初始化Excel读取器，未指定文件")
 
     def read_sheet(self, sheet_name: Optional[str] = None) -> pd.DataFrame:
         """
@@ -50,6 +53,10 @@ class ExcelReader:
             return self._sheet_cache[cache_key]
 
         try:
+            if not self.excel_file or not self.excel_file.exists():
+                logger.error(f"Excel文件不存在: {self.excel_file}")
+                raise FileNotFoundError(f"Excel文件不存在: {self.excel_file}")
+
             if sheet_name:
                 df = pd.read_excel(self.excel_file, sheet_name=sheet_name, dtype=str)
             else:
@@ -75,6 +82,10 @@ class ExcelReader:
     def get_sheet_names(self) -> List[str]:
         """获取所有工作表名称"""
         try:
+            if not self.excel_file or not self.excel_file.exists():
+                logger.error(f"Excel文件不存在: {self.excel_file}")
+                return []
+
             excel_file = pd.ExcelFile(self.excel_file)
             sheet_names = excel_file.sheet_names
             logger.info(f"获取工作表名称: {sheet_names}")
@@ -247,6 +258,10 @@ class ExcelReader:
 
     def get_test_suites(self) -> Dict[str, List[Dict[str, Any]]]:
         """获取所有测试套件"""
+        if not self.excel_file or not self.excel_file.exists():
+            logger.warning(f"Excel文件不存在: {self.excel_file}")
+            return {}
+
         sheet_names = self.get_sheet_names()
         suites = {}
 
@@ -264,6 +279,10 @@ class ExcelReader:
 
     def get_config(self, sheet_name: str = "config") -> Dict[str, Any]:
         """获取配置信息"""
+        if not self.excel_file or not self.excel_file.exists():
+            logger.warning(f"Excel文件不存在: {self.excel_file}")
+            return {}
+
         try:
             df = self.read_sheet(sheet_name)
             config_data = {}

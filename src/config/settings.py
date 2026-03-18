@@ -18,8 +18,8 @@ class Config:
     TEMPLATE_DIR = BASE_DIR / "templates"
     TOKEN_CACHE_DIR = BASE_DIR / ".token_cache"
 
-    # 文件路径
-    EXCEL_FILE = TEST_DATA_DIR / "api_test_cases.xlsx"
+    # 文件路径   # TEST_DATA_DIR / "api_test_cases.xlsx"
+    EXCEL_FILE = ""
     
     # 基本配置
     BASE_URL = os.getenv("API_BASE_URL", "https://www.metersphere.com")

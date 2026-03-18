@@ -50,6 +50,7 @@ python3 run.py --type api --fr test_folder
 | `teardown_data` | 否 | JSON | 后置操作数据，支持API调用等 | `{"type": "api", "method": "DELETE", "url": "/api/cleanup"}` |
 | `extract` | 否 | JSON | 从响应中提取数据到缓存，键为缓存变量名，值为JSON路径 | `{"token": "data.token", "user_id": "data.user.id"}` |
 | `assertions` | 否 | JSON | 自定义断言，JSON数组格式 | `[{"type": "status_code", "expected": 200}, {"type": "json_path", "jsonpath": "$.data.user.id", "expected": 1, "match_type": "equals"}]` |
+| `sleep` | 否 | 数字 | 执行接口前的等待时间（秒） | `1` |
 
 ### 列使用示例
 
@@ -174,6 +175,15 @@ python3 run.py --type api --fr test_folder
   ]
   ```
 
+#### 21. sleep
+- 执行接口前的等待时间（秒）
+- 用于控制接口执行的间隔，避免接口调用过于频繁
+- 支持小数形式的等待时间
+- 示例：
+  - `1`：等待1秒
+  - `0.5`：等待0.5秒
+  - `0`或空：不等待
+
 ## 3. 模板语法
 
 测试数据支持Jinja2模板语法，可以使用变量和函数：
@@ -255,3 +265,16 @@ python3 run.py --type api --fr test_folder
 | headers | `{"Authorization": "Bearer {{ token }}"}` |
 | expected_status | 200 |
 | assertions | `[{"type": "json_path", "jsonpath": "$.data.name", "expected": "zhangsan", "match_type": "equals"}]` |
+
+### 带等待时间的测试
+
+| 列名 | 值 |
+|------|------|
+| case_id | TC004 |
+| case_name | 带等待时间的接口调用 |
+| method | POST |
+| url | /api/rate-limited |
+| headers | `{"Content-Type": "application/json"}` |
+| json | `{"action": "process"}` |
+| expected_status | 200 |
+| sleep | 1 |

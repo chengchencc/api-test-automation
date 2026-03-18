@@ -170,6 +170,15 @@ class TestAPI(BaseTest):
         files = test_case.get('files', None)
         # 把test_case.get('expected_status', 200)类型转换为int
         expected_status = int(test_case.get('expected_status', 200))
+        # 获取sleep参数
+        sleep_time = test_case.get('sleep', 0)
+        if sleep_time is not None:
+            try:
+                sleep_time = float(sleep_time)
+            except (ValueError, TypeError):
+                sleep_time = 0
+        else:
+            sleep_time = 0
         expected_response = test_case.get('expected_response', {})
         expected_schema = test_case.get('expected_schema', {})
         expected_contains = test_case.get('expected_contains')
@@ -230,7 +239,11 @@ class TestAPI(BaseTest):
                         rendered_headers[k] = v
                 headers = rendered_headers
                 # 输出渲染后的headers
-                self.test_logger.log_step(f"渲染后headers === : - {headers}")
+            self.test_logger.log_step(f"渲染后headers === : - {headers}")
+            # 执行sleep
+            if sleep_time > 0:
+                self.test_logger.log_step(f"执行sleep: {sleep_time}秒")
+                time.sleep(sleep_time)
             # 发送请求
             response = request_client.send_request(
                 method=method,
