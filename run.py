@@ -43,8 +43,9 @@ class TestRunner:
         Returns:
             退出码
         """
-        # 存储测试文件夹信息
+        # 存储测试文件夹和Excel文件信息
         self.test_folder = kwargs.get('fr', '')
+        self.excel_file = kwargs.get('fn', '')
         self.start_time = time.time()
 
         # 基本pytest命令
@@ -93,8 +94,12 @@ class TestRunner:
         if html_report:
             # 生成时间戳（年月日_时分秒格式）
             timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-            # 创建基于测试文件夹和时间戳的文件名
-            if self.test_folder:
+            # 创建基于Excel文件名、测试文件夹和时间戳的文件名
+            if self.excel_file:
+                # 如果指定了Excel文件，使用Excel文件名（去掉扩展名）
+                excel_name = self.excel_file.replace('.xlsx', '').replace('.xls', '')
+                filename = f"{excel_name}_{timestamp}.html"
+            elif self.test_folder:
                 filename = f"{self.test_folder}_{timestamp}.html"
             else:
                 filename = f"{timestamp}.html"

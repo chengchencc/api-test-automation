@@ -51,6 +51,14 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
 
+    # 创建或更新报告对象
+    if not hasattr(item, 'report'):
+        item.report = rep
+    else:
+        # 合并报告信息
+        if hasattr(item.report, 'case_id'):
+            rep.case_id = item.report.case_id
+
     # 设置Allure报告属性
     if rep.when == "call":
         # 测试用例执行完成
@@ -156,6 +164,63 @@ def test_data():
 def test_cache():
     """测试缓存 fixture"""
     return {}
+
+
+# pytest-html 自定义列配置
+def pytest_html_results_table_header(cells):
+    """添加自定义列到HTML报告表头"""
+    cells.insert(1, '<th>用例名称</th>')
+    cells.insert(1, '<th>用例ID</th>')
+
+
+def pytest_html_results_table_row(report, cells):
+    """添加自定义列数据到HTML报告表格行"""
+    # 获取测试用例ID和名称（从user_properties中提取）
+    case_id = "N/A"
+    case_name = "N/A"
+    
+    # 尝试从user_properties中获取（最可靠的方式）
+    if hasattr(report, 'user_properties'):
+        for key, value in report.user_properties:
+            if key == 'case_id':
+                case_id = str(value)
+            elif key == 'case_name':
+                case_name = str(value)
+    
+    # 如果没找到，尝试从node对象中获取
+    if case_id == "N/A" and hasattr(report, 'node'):
+        node = report.node
+        if hasattr(node, 'user_properties'):
+            for key, value in node.user_properties:
+                if key == 'case_id':
+                    case_id = str(value)
+                elif key == 'case_name':
+                    case_name = str(value)
+    
+    # 如果还是没找到，尝试从node的report对象中获取
+    if case_id == "N/A" and hasattr(report, 'node'):
+        node = report.node
+        if hasattr(node, 'report') and hasattr(node.report, 'case_id'):
+            case_id = str(node.report.case_id)
+    if case_name == "N/A" and hasattr(report, 'node'):
+        node = report.node
+        if hasattr(node, 'report') and hasattr(node.report, 'case_name'):
+            case_name = str(node.report.case_name)
+    
+    # 如果还是没找到，尝试从nodeid中提取
+    if case_id == "N/A" and hasattr(report, 'nodeid'):
+        nodeid = report.nodeid
+        import re
+        match = re.search(r'case_id[:=]([^/]+)', nodeid)
+        if match:
+            case_id = match.group(1)
+    
+    # 确保中文正确编码
+    case_id = case_id.encode('utf-8').decode('utf-8', errors='replace')
+    case_name = case_name.encode('utf-8').decode('utf-8', errors='replace')
+    
+    cells.insert(1, f'<td>{case_name}</td>')
+    cells.insert(1, f'<td>{case_id}</td>')
 
 @pytest.fixture
 def auth_token():

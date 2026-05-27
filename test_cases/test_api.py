@@ -109,7 +109,7 @@ class TestAPI(BaseTest):
          for sheet, cases in ExcelReader(excel_file).get_test_suites().items() 
          for idx in range(len(cases))]
     )
-    def test_excel_driven(self, excel_file: str, sheet_name: str, case_index: int):
+    def test_excel_driven(self, excel_file: str, sheet_name: str, case_index: int, request):
         """
         执行Excel中的测试用例
 
@@ -160,6 +160,16 @@ class TestAPI(BaseTest):
         # 获取测试用例信息
         case_id = test_case.get('case_id', 'unknown')
         case_name = test_case.get('case_name', '未知用例')
+        
+        # 将case_id和case_name设置到pytest的user_properties中
+        request.node.user_properties.append(('case_id', case_id))
+        request.node.user_properties.append(('case_name', case_name))
+        
+        # 同时设置到report对象中
+        if not hasattr(request.node, 'report'):
+            request.node.report = type('Report', (), {})()
+        request.node.report.case_id = case_id
+        request.node.report.case_name = case_name
         description = test_case.get('description', '')
         method = test_case.get('method', 'GET').upper()
         url = test_case.get('url', '')
