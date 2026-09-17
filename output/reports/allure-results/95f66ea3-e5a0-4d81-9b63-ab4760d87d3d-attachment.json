@@ -1,0 +1,12 @@
+{
+  "method": "GET",
+  "url": "https://www.metersphere.com/prod-api/sms/country/supports",
+  "headers": {
+    "User-Agent": "ApiTestFramework/2.0",
+    "Accept-Encoding": "gzip, deflate",
+    "Accept": "application/json",
+    "Connection": "keep-alive",
+    "Content-Type": "application/json"
+  },
+  "body": null
+}

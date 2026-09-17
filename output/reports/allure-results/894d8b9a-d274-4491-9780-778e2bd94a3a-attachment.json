@@ -1,0 +1,6 @@
+{
+  "case_id": "TC002",
+  "case_name": "用户功能-t2-01",
+  "description": "测试nocobase登录接口",
+  "severity": "critical"
+}

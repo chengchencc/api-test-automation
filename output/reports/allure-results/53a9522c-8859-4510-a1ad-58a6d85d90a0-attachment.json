@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "value": "中国大陆",
+      "key": "86"
+    },
+    {
+      "value": "中国香港",
+      "key": "852"
+    },
+    {
+      "value": "中国澳门",
+      "key": "853"
+    },
+    {
+      "value": "中国台湾",
+      "key": "886"
+    }
+  ]
+}

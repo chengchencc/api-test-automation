@@ -1,0 +1,19 @@
+{
+  "data": {
+    "user": {
+      "updatedAt": "2026-02-28T00:24:32.189Z",
+      "createdAt": "2026-02-28T00:24:32.189Z",
+      "email": "admin@nocobase.com",
+      "systemSettings": {},
+      "nickname": "Super Admin",
+      "id": 1,
+      "appLang": null,
+      "passwordChangeTz": null,
+      "phone": null,
+      "username": "nocobase",
+      "updatedById": null,
+      "createdById": null
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbXAiOnRydWUsImlhdCI6MTc3OTg1MDk2NCwic2lnbkluVGltZSI6MTc3OTg1MDk2NDkxOSwiZXhwIjoxNzc5OTM3MzY0LCJqdGkiOiIyM2FiMmZhOC1mMDMyLTQwMGYtYjBhMy00OGY4ZjY2ZWE0YjQifQ.ngsl_9QrmePPUiFK5U6F2nAzWmTZlHOZBdIxe48KC7Y"
+  }
+}

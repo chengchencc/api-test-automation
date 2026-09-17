@@ -1,0 +1,29 @@
+2026-05-27 11:02:44 - INFO - ============================================================
+2026-05-27 11:02:44 - INFO - 开始测试会话
+2026-05-27 11:02:44 - INFO - 测试时间: 2026-05-27 11:02:44
+2026-05-27 11:02:44 - INFO - 项目目录: /Users/niuguimin/work/study/chengchencc/api-test-automation/output
+2026-05-27 11:02:44 - INFO - 测试数据: 
+2026-05-27 11:02:44 - INFO - 基础URL: https://www.metersphere.com
+2026-05-27 11:02:44 - INFO - 使用AccessToken: 
+2026-05-27 11:02:44 - INFO - ============================================================
+test logger name:: type 
+2026-05-27 11:02:44 - INFO - type - 测试类初始化
+2026-05-27 11:02:44 - WARNING - Excel文件不存在: 
+2026-05-27 11:02:44 - INFO - 开始测试: test_excel_driven[/Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/\u55f7\u55f7.xlsx-test_cases-0]
+2026-05-27 11:02:44 - INFO - test_excel_driven - 开始测试: test_excel_driven
+2026-05-27 11:02:44 - INFO - 初始化Excel读取器，文件: /Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/嗷嗷.xlsx
+2026-05-27 11:02:44 - INFO - 成功读取Excel工作表: test_cases, 行数: 1
+2026-05-27 11:02:44 - INFO - 从工作表 test_cases 加载了 1 个测试用例
+2026-05-27 11:02:44 - INFO - test_excel_driven - 执行测试用例: TC002 - 用户功能-t2-01
+2026-05-27 11:02:44 - INFO - test_excel_driven - 原始headers === : - {'Content-Type': 'application/json; charset=utf-8'}
+2026-05-27 11:02:44 - INFO - test_excel_driven - 渲染headers[Content-Type] === : application/json; charset=utf-8 -> application/json; charset=utf-8
+2026-05-27 11:02:44 - INFO - test_excel_driven - 渲染后headers === : - {'Content-Type': 'application/json; charset=utf-8'}
+2026-05-27 11:02:44 - INFO - 请求信息: POST http://localhost:13000/api/auth:signIn {'User-Agent': 'ApiTestFramework/2.0', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Content-Type': 'application/json; charset=utf-8'}
+2026-05-27 11:02:44 - INFO - 响应: 200，data:{'data': {'user': {'updatedAt': '2026-02-28T00:24:32.189Z', 'createdAt': '2026-02-28T00:24:32.189Z', 'email': 'admin@nocobase.com', 'systemSettings': {}, 'nickname': 'Super Admin', 'id': 1, 'appLang': None, 'passwordChangeTz': None, 'phone': None, 'username': 'nocobase', 'updatedById': None, 'createdById': None}, 'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbXAiOnRydWUsImlhdCI6MTc3OTg1MDk2NCwic2lnbkluVGltZSI6MTc3OTg1MDk2NDkxOSwiZXhwIjoxNzc5OTM3MzY0LCJqdGkiOiIyM2FiMmZhOC1mMDMyLTQwMGYtYjBhMy00OGY4ZjY2ZWE0YjQifQ.ngsl_9QrmePPUiFK5U6F2nAzWmTZlHOZBdIxe48KC7Y'}}
+2026-05-27 11:02:44 - INFO - test_excel_driven - 获取缓存中的数据 === : - {'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbXAiOnRydWUsImlhdCI6MTc3OTg1MDk2NCwic2lnbkluVGltZSI6MTc3OTg1MDk2NDkxOSwiZXhwIjoxNzc5OTM3MzY0LCJqdGkiOiIyM2FiMmZhOC1mMDMyLTQwMGYtYjBhMy00OGY4ZjY2ZWE0YjQifQ.ngsl_9QrmePPUiFK5U6F2nAzWmTZlHOZBdIxe48KC7Y'}
+2026-05-27 11:02:44 - INFO - 响应断言成功: status_code=200, max_time=1, contains='nickname'
+2026-05-27 11:02:44 - INFO - test_excel_driven - 自定义断言开始执行：
+2026-05-27 11:02:44 - INFO - test_excel_driven - 自定义断言结果： 1 成功: json_path
+2026-05-27 11:02:44 - INFO - test_excel_driven - 测试用例 TC002 执行成功
+2026-05-27 11:02:44 - INFO - test_excel_driven - 结束测试: test_excel_driven
+2026-05-27 11:02:44 - INFO - 结束测试: test_excel_driven[/Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/\u55f7\u55f7.xlsx-test_cases-0], 耗时: 0.18秒

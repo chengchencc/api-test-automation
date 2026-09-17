@@ -1,0 +1,6 @@
+{
+  "case_id": "TC001",
+  "case_name": "单接口测试-t1",
+  "description": "测试获取短信支持地区接口",
+  "severity": "critical"
+}

@@ -1,0 +1,22 @@
+[32mINFO    [0m api_test:conftest.py:139 开始测试: test_excel_driven[/Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/\u55f7\u55f7.xlsx-Sheet1-0]
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 开始测试: test_excel_driven
+[32mINFO    [0m api_test:excel_reader.py:35 初始化Excel读取器，文件: /Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/嗷嗷.xlsx
+[32mINFO    [0m api_test:excel_reader.py:75 成功读取Excel工作表: Sheet1, 行数: 1
+[32mINFO    [0m api_test:excel_reader.py:162 从工作表 Sheet1 加载了 1 个测试用例
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 执行测试用例: TC001 - 单接口测试-t1
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 原始headers === : - {'Content-Type': 'application/json'}
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 渲染headers[Content-Type] === : application/json -> application/json
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 渲染后headers === : - {'Content-Type': 'application/json'}
+[32mINFO    [0m api_test:logger.py:96 请求信息: GET https://www.metersphere.com/prod-api/sms/country/supports {'User-Agent': 'ApiTestFramework/2.0', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Content-Type': 'application/json'}
+[32mINFO    [0m api_test:logger.py:113 响应: 200，data:{'success': True, 'message': None, 'data': [{'value': '中国大陆', 'key': '86'}, {'value': '中国香港', 'key': '852'}, {'value': '中国澳门', 'key': '853'}, {'value': '中国台湾', 'key': '886'}]}
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 获取缓存中的数据 === : - {'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbXAiOnRydWUsImlhdCI6MTc3OTg1MDk2NCwic2lnbkluVGltZSI6MTc3OTg1MDk2NDkxOSwiZXhwIjoxNzc5OTM3MzY0LCJqdGkiOiIyM2FiMmZhOC1mMDMyLTQwMGYtYjBhMy00OGY4ZjY2ZWE0YjQifQ.ngsl_9QrmePPUiFK5U6F2nAzWmTZlHOZBdIxe48KC7Y'}
+[32mINFO    [0m api_test:assert_utils.py:341 响应断言成功: status_code=200, max_time=1
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 自定义断言开始执行：
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 自定义断言结果： 1 成功: status_code
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 测试用例 TC001 执行成功
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 结束测试: test_excel_driven
+[32mINFO    [0m api_test:conftest.py:149 结束测试: test_excel_driven[/Users/niuguimin/work/study/chengchencc/api-test-automation/output/test_data/aa/\u55f7\u55f7.xlsx-Sheet1-0], 耗时: 0.19秒
+[32mINFO    [0m api_test:logger.py:122 test_excel_driven - 测试类清理
+[32mINFO    [0m api_test:conftest.py:130 ============================================================
+[32mINFO    [0m api_test:conftest.py:131 测试会话结束
+[32mINFO    [0m api_test:conftest.py:132 ============================================================
